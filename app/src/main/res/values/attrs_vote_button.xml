@@ -1,0 +1,12 @@
+<resources>
+    <declare-styleable name="VoteButton">
+        <attr name="leftString" format="string" />
+        <attr name="rightString" format="string" />
+        <attr name="textSize" format="dimension" />
+        <attr name="slashUnderWidth" format="dimension"/>
+        <attr name="slashWidth" format="dimension"/>
+        <attr name="textColor" format="color" />
+        <attr name="leftColor" format="color" />
+        <attr name="rightColor" format="color" />
+    </declare-styleable>
+</resources>
