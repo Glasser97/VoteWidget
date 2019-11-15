@@ -91,12 +91,12 @@ class DoubleMoveBar : View {
 
 
     private fun init(attrs:AttributeSet?,defStyle:Int){
-        val a: TypedArray = context.obtainStyledAttributes(attrs,R.styleable.VoteButton,defStyle,0)
+        val a: TypedArray = context.obtainStyledAttributes(attrs,R.styleable.DoubleMoveBar,defStyle,0)
 
-        mLeftColor = a.getColor(R.styleable.VoteButton_leftColor,mLeftColor)
-        mRightColor = a.getColor(R.styleable.VoteButton_rightColor,mRightColor)
-        mSlashUnderWidth = a.getDimension(R.styleable.VoteButton_slashUnderWidth,mSlashUnderWidth)
-        mSlashWidth = a.getDimension(R.styleable.VoteButton_slashWidth,mSlashWidth)
+        mLeftColor = a.getColor(R.styleable.DoubleMoveBar_leftColor,mLeftColor)
+        mRightColor = a.getColor(R.styleable.DoubleMoveBar_rightColor,mRightColor)
+        mSlashUnderWidth = a.getDimension(R.styleable.DoubleMoveBar_slashUnderWidth,mSlashUnderWidth)
+        mSlashWidth = a.getDimension(R.styleable.DoubleMoveBar_slashWidth,mSlashWidth)
         a.recycle()
 
         //初始化圆角
@@ -212,11 +212,11 @@ class DoubleMoveBar : View {
     }
 
     private fun computePercent(leftNo:Int, rightNo:Int):Float{
-        var half:Float = 1F/2F
-        if((leftNo == 0) or (rightNo == 0)){
-            return half;
+        val half:Float = 1F/2F
+        return if((leftNo == 0) || (rightNo == 0)){
+            half
         }else{
-            return leftNo.toFloat()/(leftNo+rightNo).toFloat()
+            leftNo.toFloat()/(leftNo+rightNo).toFloat()
         }
     }
 

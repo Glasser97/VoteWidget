@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="slashUnderWidth" format="dimension"/>
+    <attr name="slashWidth" format="dimension"/>
+    <attr name="leftColor" format="color" />
+    <attr name="rightColor" format="color" />
+
+    <declare-styleable name="DoubleMoveBar">
+        <attr name="slashUnderWidth"/>
+        <attr name="slashWidth"/>
+        <attr name="leftColor"/>
+        <attr name="rightColor"/>
+    </declare-styleable>
+
+    <declare-styleable name="VoteButton">
+        <attr name="leftString" format="string" />
+        <attr name="rightString" format="string" />
+        <attr name="textSize" format="dimension" />
+        <attr name="textColor" format="color" />
+        <attr name="slashUnderWidth"/>
+        <attr name="slashWidth"/>
+        <attr name="leftColor"/>
+        <attr name="rightColor"/>
+    </declare-styleable>
+
+</resources>
