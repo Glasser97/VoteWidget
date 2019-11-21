@@ -10,7 +10,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        doubleMoveBar.leftNo = 2
-        doubleMoveBar.rightNo = 5
+        doubleMoveBar.leftNo = 24
+        doubleMoveBar.rightNo = 76
     }
 }

@@ -71,7 +71,7 @@ class DoubleMoveBar : View {
     var rightRight:Float = 0F
     var rightTop:Float = 0F
     var rightBottom:Float = 0F
-    private var leftGradientRight:Float = 0F
+    var leftGradientRight:Float = 0F
     var rightGradientLeft:Float = 0F
 
 
@@ -100,7 +100,7 @@ class DoubleMoveBar : View {
         a.recycle()
 
         //初始化圆角
-        //corner = CornerPathEffect(20F)
+        corner = CornerPathEffect(1F)
 
         //初始化渐变颜色数组和渐变位置数组
         setColors(mLeftColor, mRightColor)
@@ -108,7 +108,7 @@ class DoubleMoveBar : View {
 
         //初始化animator
         animator.setPropertyName("progress")
-        animator.setFloatValues(0F,1F)
+        animator.setFloatValues(0.01F,1F)
         animator.duration = 1000
         animator.target = this
         animator.interpolator = interpolator
@@ -117,11 +117,11 @@ class DoubleMoveBar : View {
         leftColorPaint.flags = Paint.ANTI_ALIAS_FLAG
         leftColorPaint.color = mLeftColor
         leftColorPaint.style = Paint.Style.FILL
-        //leftColorPaint.pathEffect = corner
+        leftColorPaint.pathEffect = corner
         rightColorPaint.flags = Paint.ANTI_ALIAS_FLAG
         rightColorPaint.color = mRightColor
         rightColorPaint.style = Paint.Style.FILL
-        //rightColorPaint.pathEffect = corner
+        rightColorPaint.pathEffect = corner
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

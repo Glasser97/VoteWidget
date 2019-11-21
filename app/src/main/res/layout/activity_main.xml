@@ -6,20 +6,28 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
+    <com.example.kotlincustomview.VoteButton
         android:id="@+id/run_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/ft_value_1080p_132px"
+        android:paddingStart="@dimen/ft_value_1080p_60px"
+        android:paddingEnd="@dimen/ft_value_1080p_60px"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/doubleMoveBar"
+        app:leftColor="#E91E63"
+        app:leftString="看好"
+        app:rightColor="#3F51B5"
+        app:rightString="不看好"
+        app:slashUnderWidth="@dimen/ft_value_1080p_30px"
+        app:slashWidth="@dimen/ft_value_1080p_9px" />
 
     <com.example.kotlincustomview.DoubleMoveBar
         android:id="@+id/doubleMoveBar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/ft_value_1080p_30px"
+        android:layout_height="@dimen/ft_value_1080p_36px"
         android:paddingStart="@dimen/ft_value_1080p_60px"
         android:paddingEnd="@dimen/ft_value_1080p_60px"
         app:layout_constraintBottom_toTopOf="@+id/run_text"

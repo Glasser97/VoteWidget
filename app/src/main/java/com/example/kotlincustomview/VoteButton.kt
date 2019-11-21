@@ -201,8 +201,6 @@ class VoteButton : View {
 
     }
 
-    //private fun drawTheBar(canvas:Canvas?, contentWidth:Int, contentHeight:Int, mSlashUnderWidth:Int, )
-
 
     private fun brighterColor(color:Int, brighterK:Float):Int{
         val alpha:Int = color and 0xff000000.toInt()
