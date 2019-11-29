@@ -13,6 +13,7 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.text.TextPaint
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import kotlin.math.min
 import android.graphics.LinearGradient as LinearGradient1
@@ -27,8 +28,10 @@ class VoteButton : View {
     //定义左右按钮文本
     private var mLeftString:String? = null
     private var mRightString:String? = null
+
     //点击事件接口
     var voteClickListener:VoteClickListener? = null
+
     //定义圆角
     private lateinit var corner:CornerPathEffect
 
@@ -39,21 +42,24 @@ class VoteButton : View {
     //定义渐变色的shader
     private var leftGradient: LinearGradient? =null
     private var rightGradient: LinearGradient? =null
-
-    private var mLeftNo:Int = 0
-    private var mRightNo:Int = 0
     private var mTextSize:Float = 12F
     private var mSlashWidth:Float = 5F
-
     private var mLeftTextPaint:TextPaint = TextPaint()
     private var mRightTextPaint:TextPaint = TextPaint()
     private var leftColorPaint:Paint = Paint()
     private var rightColorPaint:Paint = Paint()
+
+    //左右文字的大小与居中需要唯一的距离
     private var mLeftTextWidth:Float = 0F
     private var mLeftTextHeight:Float = 0F
     private var mRightTextWidth:Float = 0F
     private var mRightTextHeight:Float = 0F
+    private var mLeftTextHorizonMovement:Float = 0F
+    private var mLeftTextVerticalMovement:Float = 0F
+    private var mRightTextHorizonMovement:Float = 0F
+    private var mRightTextVerticalMovement:Float = 0F
 
+    //斜线的下端宽度
     private var mSlashUnderWidth:Float = 0F
 
     //定义绘制的左右Path
@@ -64,6 +70,16 @@ class VoteButton : View {
     private lateinit var leftColors:IntArray
     private lateinit var rightColors:IntArray
     private lateinit var colorPositions:FloatArray
+
+    //定义两个梯形的四个顶点边距
+    private var leftLeft:Float = 0F
+    private var leftRight:Float = 0F
+    private var leftTop:Float = 0F
+    private var leftBottom:Float = 0F
+    private var rightLeft:Float = 0F
+    private var rightRight:Float = 0F
+    private var rightTop:Float = 0F
+    private var rightBottom:Float = 0F
 
     constructor(context:Context):super(context){
         init(null, 0)
@@ -92,17 +108,12 @@ class VoteButton : View {
         a.recycle()
 
         //初始化圆角
-        corner = CornerPathEffect(10F)
+        corner = CornerPathEffect(20F)
 
         //初始化渐变颜色数组和渐变位置数组
         setColors(mLeftColor, mRightColor)
-        colorPositions = floatArrayOf(0.3F,0.8F)
 
         //初始化画笔
-        mLeftTextPaint.flags = Paint.ANTI_ALIAS_FLAG
-        mLeftTextPaint.textAlign = Paint.Align.LEFT
-        mRightTextPaint.flags = Paint.ANTI_ALIAS_FLAG
-        mRightTextPaint.textAlign = Paint.Align.RIGHT
         leftColorPaint.flags = Paint.ANTI_ALIAS_FLAG
         leftColorPaint.color = mLeftColor
         leftColorPaint.style = Paint.Style.FILL
@@ -117,16 +128,26 @@ class VoteButton : View {
     }
 
     private fun invalidateTextPaintAndMeasurements(){
+        mLeftTextPaint.flags = Paint.ANTI_ALIAS_FLAG
+        mLeftTextPaint.textAlign = Paint.Align.LEFT
+        mRightTextPaint.flags = Paint.ANTI_ALIAS_FLAG
+        mRightTextPaint.textAlign = Paint.Align.RIGHT
         mLeftTextPaint.textSize = mTextSize
         mLeftTextPaint.color = mTextColor
         mRightTextPaint.textSize = mTextSize
-        mLeftTextPaint.color = mTextColor
+        mRightTextPaint.color = mTextColor
         mLeftTextWidth = mLeftTextPaint.measureText(mLeftString)
         mRightTextWidth = mRightTextPaint.measureText(mRightString)
         val leftFontMetrics:Paint.FontMetrics = mLeftTextPaint.fontMetrics
         mLeftTextHeight = leftFontMetrics.bottom
         val rightFontMetrics:Paint.FontMetrics = mRightTextPaint.fontMetrics
         mRightTextHeight = rightFontMetrics.bottom
+        //计算文字居中需要位移的距离
+        mLeftTextHorizonMovement = -mLeftTextWidth/2
+        mLeftTextVerticalMovement = -(leftFontMetrics.ascent+leftFontMetrics.descent)/2
+        mRightTextHorizonMovement = mRightTextWidth/2
+        mRightTextVerticalMovement = -(rightFontMetrics.ascent+rightFontMetrics.descent)/2
+
 
     }
 
@@ -164,42 +185,80 @@ class VoteButton : View {
         val contentHeight = height-paddingTop-paddingBottom
 
         val halfH = contentHeight/2
-        val leftRectWidth = contentWidth/2
-        val halfSlash:Int = (mSlashUnderWidth/2+mSlashWidth/2).toInt()
+        val leftRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
+        val rightRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
+
+        //计算两边梯形的四个顶点
+        leftTop = paddingTop.toFloat()
+        leftLeft = paddingLeft.toFloat()
+        leftBottom = paddingTop+contentHeight.toFloat()
+        leftRight = paddingLeft+leftRectWidth+mSlashUnderWidth
+
+        rightTop = paddingTop.toFloat()
+        rightRight = width-paddingRight.toFloat()
+        rightLeft = width-paddingRight-rightRectWidth-mSlashUnderWidth
+        rightBottom = paddingTop+contentHeight.toFloat()
 
         //判断是否已经有渐变色shader,没有的话创建
         if(leftGradient == null){
-            leftGradient = LinearGradient(paddingLeft.toFloat(),paddingTop+halfH.toFloat(),
-                paddingLeft+leftRectWidth-halfSlash+mSlashUnderWidth, paddingTop.toFloat(),
+            leftGradient = LinearGradient(leftLeft,leftBottom,
+                leftRight, leftTop,
                 leftColors, colorPositions,Shader.TileMode.CLAMP)
         }
         if(rightGradient == null){
-            rightGradient = LinearGradient(width-paddingRight.toFloat(),paddingTop+halfH.toFloat(),
-                paddingLeft+leftRectWidth+halfSlash-mSlashUnderWidth,paddingTop+contentHeight.toFloat(),
+            rightGradient = LinearGradient(rightRight,rightTop,
+                rightLeft,rightBottom,
                 rightColors,colorPositions,Shader.TileMode.CLAMP)
         }
 
+
         //使用Path绘制出左边的按钮,没有从顶点开始是因为圆角可能会不能闭合,逆时针旋转绘制
-        leftButtonPath.moveTo(paddingLeft+leftRectWidth-halfSlash.toFloat(), paddingTop.toFloat())
-        leftButtonPath.lineTo(paddingLeft.toFloat(),paddingTop.toFloat())
-        leftButtonPath.lineTo(paddingLeft.toFloat(),paddingTop+contentHeight.toFloat())
-        leftButtonPath.lineTo(paddingLeft+leftRectWidth-halfSlash.toFloat(),paddingTop+contentHeight.toFloat())
-        leftButtonPath.lineTo(paddingLeft+leftRectWidth-halfSlash+mSlashUnderWidth,paddingTop.toFloat())
+        leftButtonPath.moveTo(leftRight-mSlashUnderWidth, leftTop)
+        leftButtonPath.lineTo(leftLeft,leftTop)
+        leftButtonPath.lineTo(leftLeft,leftBottom)
+        leftButtonPath.lineTo(leftRight-mSlashUnderWidth,leftBottom)
+        leftButtonPath.lineTo(leftRight,leftTop)
         leftButtonPath.close()
         leftColorPaint.shader = leftGradient
         canvas?.drawPath(leftButtonPath,leftColorPaint)
 
         //同样的使用Path绘制出右边的按钮,逆时针旋转绘制
-        rightButtonPath.moveTo(paddingLeft+leftRectWidth+halfSlash.toFloat(),paddingTop+contentHeight.toFloat())
-        rightButtonPath.lineTo(width-paddingRight.toFloat(),paddingTop+contentHeight.toFloat())
-        rightButtonPath.lineTo(width-paddingRight.toFloat(),paddingTop.toFloat())
-        rightButtonPath.lineTo(paddingLeft+leftRectWidth+halfSlash.toFloat(),paddingTop.toFloat())
-        rightButtonPath.lineTo(paddingLeft+leftRectWidth+halfSlash-mSlashUnderWidth,paddingTop+contentHeight.toFloat())
+        rightButtonPath.moveTo(rightLeft+mSlashUnderWidth,rightBottom)
+        rightButtonPath.lineTo(rightRight,rightBottom)
+        rightButtonPath.lineTo(rightRight,rightTop)
+        rightButtonPath.lineTo(rightLeft+mSlashUnderWidth,rightTop)
+        rightButtonPath.lineTo(rightLeft,rightBottom)
         rightButtonPath.close()
         rightColorPaint.shader = rightGradient
         canvas?.drawPath(rightButtonPath,rightColorPaint)
 
+        //计算文字的中点,绘制文字
+        val leftHorizonMidpoint:Float = paddingLeft+leftRectWidth/2
+        val leftVerticalMidpoint:Float = paddingTop+halfH.toFloat()
+        val rightHorizonMidpoint:Float = width-paddingRight-rightRectWidth/2
+        val rightVerticalMidpoint:Float = paddingTop+halfH.toFloat()
+        //绘制文字
+        canvas?.drawText(mLeftString ?: "",
+            leftHorizonMidpoint+mLeftTextHorizonMovement,
+            leftVerticalMidpoint+mLeftTextVerticalMovement,mLeftTextPaint)
+        canvas?.drawText(mRightString ?: "",
+            rightHorizonMidpoint+mRightTextHorizonMovement,
+            rightVerticalMidpoint+mRightTextVerticalMovement,mRightTextPaint)
     }
+
+    //点击事件
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        when(event?.action){
+            MotionEvent.ACTION_UP -> {
+
+            }
+        }
+        return true
+    }
+
+    private fun leftOrRight(width:Int,height:Int,mUnderSlashWidth:Float,mSlashWidth:Float){}
+
+
 
 
     private fun brighterColor(color:Int, brighterK:Float):Int{
@@ -214,8 +273,9 @@ class VoteButton : View {
     }
 
     private fun setColors(leftColor:Int, rightColor:Int){
-        leftColors = intArrayOf(leftColor,brighterColor(leftColor,1.5F))
-        rightColors = intArrayOf(rightColor,brighterColor(rightColor,1.5F))
+        leftColors = intArrayOf(leftColor,brighterColor(leftColor,1.2F))
+        rightColors = intArrayOf(rightColor,brighterColor(rightColor,1.2F))
+        colorPositions = floatArrayOf(0.3F,0.8F)
     }
 
     //点击事件接口

@@ -6,23 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.example.kotlincustomview.VoteButton
-        android:id="@+id/run_text"
+    <com.example.kotlincustomview.VoteWidget
+        android:id="@+id/vote_widget"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/ft_value_1080p_132px"
-        android:paddingStart="@dimen/ft_value_1080p_60px"
-        android:paddingEnd="@dimen/ft_value_1080p_60px"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/doubleMoveBar"
-        app:leftColor="#E91E63"
-        app:leftString="看好"
-        app:rightColor="#3F51B5"
-        app:rightString="不看好"
-        app:slashUnderWidth="@dimen/ft_value_1080p_30px"
-        app:slashWidth="@dimen/ft_value_1080p_9px" />
+        app:textColor="#FFFFFF"
+        app:slashUnderWidth="@dimen/ft_value_1080p_102px"
+        app:slashWidth="@dimen/ft_value_1080p_21px" />
 
     <com.example.kotlincustomview.DoubleMoveBar
         android:id="@+id/doubleMoveBar"
@@ -30,12 +25,12 @@
         android:layout_height="@dimen/ft_value_1080p_36px"
         android:paddingStart="@dimen/ft_value_1080p_60px"
         android:paddingEnd="@dimen/ft_value_1080p_60px"
-        app:layout_constraintBottom_toTopOf="@+id/run_text"
+        app:layout_constraintBottom_toTopOf="@+id/vote_widget"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:leftColor="#E91E63"
-        app:rightColor="#3F51B5"
+        app:leftColor="@color/leftVoteColor"
+        app:rightColor="@color/rightVoteColor"
         app:slashUnderWidth="@dimen/ft_value_1080p_30px"
         app:slashWidth="@dimen/ft_value_1080p_9px"/>
 

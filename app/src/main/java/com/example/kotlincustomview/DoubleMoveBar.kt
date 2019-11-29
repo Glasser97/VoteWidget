@@ -62,17 +62,17 @@ class DoubleMoveBar : View {
         invalidate()
     }
 
-    //定义两个梯形的各四个边距
-    var leftLeft:Float = 0F
-    var leftRight:Float = 0F
-    var leftTop:Float = 0F
-    var leftBottom:Float = 0F
-    var rightLeft:Float = 0F
-    var rightRight:Float = 0F
-    var rightTop:Float = 0F
-    var rightBottom:Float = 0F
-    var leftGradientRight:Float = 0F
-    var rightGradientLeft:Float = 0F
+    //定义两个梯形的四个顶点边距
+    private var leftLeft:Float = 0F
+    private var leftRight:Float = 0F
+    private var leftTop:Float = 0F
+    private var leftBottom:Float = 0F
+    private var rightLeft:Float = 0F
+    private var rightRight:Float = 0F
+    private var rightTop:Float = 0F
+    private var rightBottom:Float = 0F
+    private var leftGradientRight:Float = 0F
+    private var rightGradientLeft:Float = 0F
 
 
 
@@ -109,7 +109,7 @@ class DoubleMoveBar : View {
         //初始化animator
         animator.setPropertyName("progress")
         animator.setFloatValues(0.01F,1F)
-        animator.duration = 1000
+        animator.duration = 700
         animator.target = this
         animator.interpolator = interpolator
 
@@ -160,18 +160,21 @@ class DoubleMoveBar : View {
         //计算左边矩形部分占用的长度
         val leftRectWidth:Int = (computePercent(leftNo,rightNo) * (contentWidth-mSlashUnderWidth-mSlashWidth)).toInt()
 
-        //计算出左右梯形的四个顶点
+        //计算出左边梯形的四个顶点
         leftTop = paddingTop.toFloat()
         leftLeft = paddingLeft.toFloat()
         leftBottom = paddingTop+contentHeight.toFloat()
         leftRight = paddingLeft+leftRectWidth*progress+mSlashUnderWidth
+        //这是左边梯形渐变色的顶点,不会改变
         leftGradientRight = paddingLeft+leftRectWidth+mSlashUnderWidth
+        //这是右边梯形的四个顶点
         rightTop = paddingTop.toFloat()
         rightBottom = paddingTop+contentHeight.toFloat()
         rightRight = width-paddingRight.toFloat()
         val k:Float = leftRectWidth+mSlashUnderWidth+mSlashWidth-contentWidth
         val b:Float = paddingLeft+contentWidth-mSlashUnderWidth
         rightLeft = k*progress+b
+        //这是右边梯形渐变色的顶点
         rightGradientLeft = paddingLeft+leftRectWidth+mSlashWidth
 
 
@@ -206,11 +209,20 @@ class DoubleMoveBar : View {
         canvas?.drawPath(rightButtonPath,rightColorPaint)
     }
 
+
+    /**
+     * 开始动画
+     */
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         animator.start()
     }
 
+    /**
+     * 计算左右进度条分别占用的比例
+     * @param leftNo 左边的投票数
+     * @param rightNo 右边的投票数
+     */
     private fun computePercent(leftNo:Int, rightNo:Int):Float{
         val half:Float = 1F/2F
         return if((leftNo == 0) || (rightNo == 0)){
@@ -220,7 +232,11 @@ class DoubleMoveBar : View {
         }
     }
 
-
+    /**
+     * 设置获取较亮的渐变色
+     * @param color 用户设置的颜色
+     * @param brighterK 三个颜色通道变亮的比例
+     */
     private fun brighterColor(color:Int, brighterK:Float):Int{
         val alpha:Int = color and 0xff000000.toInt()
         var red:Int = (((color and 0x00ff0000) shr 16) * brighterK).toInt()
@@ -232,12 +248,15 @@ class DoubleMoveBar : View {
         return alpha + (red shl 16) + (green shl 8) + blue
     }
 
+    /**
+     * 设置左右梯形的颜色数组
+     * @param leftColor 左边梯形的颜色
+     * @param rightColor 右边梯形的颜色
+     */
+
     private fun setColors(leftColor:Int, rightColor:Int){
-        leftColors = intArrayOf(leftColor,brighterColor(leftColor,2F))
-        rightColors = intArrayOf(rightColor,brighterColor(rightColor,2F))
+        leftColors = intArrayOf(leftColor,brighterColor(leftColor,1.2F))
+        rightColors = intArrayOf(rightColor,brighterColor(rightColor,1.2F))
     }
 
 }
-
-
-

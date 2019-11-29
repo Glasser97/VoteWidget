@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/defaultBackground">
+
+    <com.example.kotlincustomview.VoteButton
+        android:id="@+id/vote_button"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/ft_value_1080p_144px"
+        android:background="@color/defaultBackground"
+        android:layout_marginTop="@dimen/ft_value_1080p_48px"
+        android:paddingStart="@dimen/ft_value_1080p_48px"
+        android:paddingEnd="@dimen/ft_value_1080p_48px"
+        tools:visibility="visible"/>
+
+    <View
+        android:id="@+id/left_icon_view"
+        android:background="@drawable/pub_nncircle_icon_voting_results_opposition"
+        android:layout_width="@dimen/ft_value_1080p_42px"
+        android:layout_height="@dimen/ft_value_1080p_42px"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="@dimen/ft_value_1080p_57px"
+        android:layout_marginTop="@dimen/ft_value_1080p_48px"
+        />
+
+    <TextView
+        android:id="@+id/left_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/ft_font_size_1080p_36px"
+        android:textColor="@color/leftVoteColor"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="@dimen/ft_value_1080p_48px"
+        android:layout_marginStart="@dimen/ft_value_1080p_108px"
+        tools:text="看好" />
+    <View
+        android:id="@+id/right_icon_view"
+        android:background="@drawable/pub_nncircle_icon_voting_results_square"
+        android:layout_width="@dimen/ft_value_1080p_42px"
+        android:layout_height="@dimen/ft_value_1080p_42px"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="@dimen/ft_value_1080p_48px"
+        android:layout_marginEnd="@dimen/ft_value_1080p_9px"
+        android:layout_toStartOf="@+id/right_title_tv" />
+    <TextView
+        android:id="@+id/right_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/ft_font_size_1080p_36px"
+        android:textColor="@color/rightVoteColor"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="@dimen/ft_value_1080p_48px"
+        android:layout_marginEnd="@dimen/ft_value_1080p_57px"
+        tools:text="不看好" />
+    <TextView
+        android:id="@+id/left_percent_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/ft_font_size_1080p_54px"
+        android:textColor="@color/leftVoteColor"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="@dimen/ft_value_1080p_45px"
+        android:layout_marginTop="@dimen/ft_value_1080p_141px"
+        tools:text="73%"
+        />
+    <com.example.kotlincustomview.DoubleMoveBar
+        android:id="@+id/vote_double_bar"
+        android:layout_height="@dimen/ft_value_1080p_36px"
+        android:layout_width="@dimen/double_move_bar_width_645px"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/ft_value_1080p_147px"
+        app:leftColor="@color/leftVoteColor"
+        app:rightColor="@color/rightVoteColor"
+        app:slashUnderWidth="@dimen/ft_value_1080p_30px"
+        app:slashWidth="@dimen/ft_value_1080p_9px" />
+    <TextView
+        android:id="@+id/right_percent_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/ft_font_size_1080p_54px"
+        android:textColor="@color/rightVoteColor"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="@dimen/ft_value_1080p_45px"
+        android:layout_marginTop="@dimen/ft_value_1080p_141px"
+        android:layout_marginBottom="@dimen/ft_font_size_1080p_72px"
+        tools:text="27%"/>
+
+    <TextView
+        android:id="@+id/deadline_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/ft_font_size_1080p_36px"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="@dimen/ft_value_1080p_48px"
+        android:layout_marginStart="@dimen/ft_value_1080p_48px"
+        android:layout_marginTop="@dimen/ft_value_1080p_240px"
+        tools:text="剩余12天"
+        tools:visibility="visible"/>
+
+</RelativeLayout>
