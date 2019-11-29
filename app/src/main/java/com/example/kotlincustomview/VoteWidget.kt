@@ -81,6 +81,9 @@ class VoteWidget:RelativeLayout {
         isPermanent = displaySource.isPermanent
         isVoted = displaySource.isVoted
 
+        if(isPermanent){
+            deadline_tv.visibility = GONE
+        }
         if(isVoted){
 
         }else{
@@ -109,6 +112,15 @@ class VoteWidget:RelativeLayout {
     }
 
 
+    /**
+     * 设置Voted块的View可见或者不可见
+     */
+    fun setVotedRegion(isVoted:Boolean){
+        if(!isVoted){
+            right_percent_tv.visibility = View.GONE
+
+        }
+    }
 
 
     /**

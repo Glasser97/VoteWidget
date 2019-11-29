@@ -250,13 +250,18 @@ class VoteButton : View {
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when(event?.action){
             MotionEvent.ACTION_UP -> {
-
+                var x = event.x
+                var y = height - event.y
+                val isLeft:Boolean =
             }
         }
         return true
     }
 
-    private fun leftOrRight(width:Int,height:Int,mUnderSlashWidth:Float,mSlashWidth:Float){}
+    private fun leftOrRight(width:Int,height:Int,mUnderSlashWidth:Float,mSlashWidth:Float,x:Float,y:Float):Int{
+        var res1 = height*x -mUnderSlashWidth*y+
+        //TODO
+    }
 
 
 
