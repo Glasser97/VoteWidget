@@ -250,19 +250,39 @@ class VoteButton : View {
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when(event?.action){
             MotionEvent.ACTION_UP -> {
-                var x = event.x
-                var y = height - event.y
-                val isLeft:Boolean =
+                val x = event.x
+                val y = height - event.y
+                if(isLeft(x,y)){
+                    voteClickListener?.onClickLeft()
+                }else if(isRight(x,y)){
+                    voteClickListener?.onClickRight()
+                }
             }
         }
         return true
     }
 
-    private fun leftOrRight(width:Int,height:Int,mUnderSlashWidth:Float,mSlashWidth:Float,x:Float,y:Float):Int{
-        var res1 = height*x -mUnderSlashWidth*y+
-        //TODO
+    /**
+     * 判断点击的事件是不是是落在左边的梯形按钮上
+     * @x 这是以按钮的左下角为原点的横坐标
+     * @y 以按钮的左下角为原点的点击纵坐标
+     */
+
+    private fun isLeft(x:Float,y:Float):Boolean{
+        val resLeft = height*x - mSlashUnderWidth*y + mSlashUnderWidth*height-height*leftRight
+        return resLeft <= 0 && x > paddingLeft && y < height-paddingTop && y > paddingBottom
     }
 
+    /**
+     * 判断点击的事件是不是落在右边额梯形按钮上
+     * @x 这是以按钮的左下角为原点的横坐标
+     * @y 以按钮的左下角为原点的点击纵坐标
+     */
+
+    private fun isRight(x:Float,y:Float):Boolean{
+        val resRight = height*x - mSlashUnderWidth*y - height*rightLeft
+        return resRight > 0 && x < width-paddingRight && y < height-paddingTop && y > paddingBottom
+    }
 
 
 
