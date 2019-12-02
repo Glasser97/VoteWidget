@@ -26,8 +26,8 @@ class VoteButton : View {
     private var mHeight:Int = 0
     private var mWidth:Int = 0
     //定义左右按钮文本
-    private var mLeftString:String? = null
-    private var mRightString:String? = null
+    private var mLeftString:String = ""
+    private var mRightString:String = ""
 
     //点击事件接口
     var voteClickListener:VoteClickListener? = null
@@ -43,7 +43,6 @@ class VoteButton : View {
     private var leftGradient: LinearGradient? =null
     private var rightGradient: LinearGradient? =null
     private var mTextSize:Float = 12F
-    private var mSlashWidth:Float = 5F
     private var mLeftTextPaint:TextPaint = TextPaint()
     private var mRightTextPaint:TextPaint = TextPaint()
     private var leftColorPaint:Paint = Paint()
@@ -61,6 +60,7 @@ class VoteButton : View {
 
     //斜线的下端宽度
     private var mSlashUnderWidth:Float = 0F
+    private var mSlashWidth:Float = 5F
 
     //定义绘制的左右Path
     private var leftButtonPath:Path = Path()
@@ -93,11 +93,30 @@ class VoteButton : View {
         init(attrs,defStyle)
     }
 
+    /**
+     * 异步填入数据
+     */
+    fun fill(displaySource: VoteButtonDisplaySource){
+        this.mTextColor = displaySource.mTextColor
+        this.mLeftColor = displaySource.mLeftColor
+        this.mRightColor = displaySource.mRightColor
+        this.mSlashUnderWidth = displaySource.mSlashUnderWidth
+        this.mSlashWidth = displaySource.mSlashWidth
+        //在填入文字之前不重绘
+    }
+    fun fill(mLeftString:String,mRightString:String){
+        this.mLeftString = mLeftString
+        this.mRightString = mRightString
+        invalidateTextPaintAndMeasurements()
+        invalidate()
+        //重绘按钮
+    }
+
     private fun init(attrs:AttributeSet?,defStyle:Int){
         val a:TypedArray = context.obtainStyledAttributes(attrs,R.styleable.VoteButton,defStyle,0)
 
-        mLeftString = a.getString(R.styleable.VoteButton_leftString)
-        mRightString = a.getString(R.styleable.VoteButton_rightString)
+        //mLeftString = a.getString(R.styleable.VoteButton_leftString)
+        //mRightString = a.getString(R.styleable.VoteButton_rightString)
         mTextColor = a.getColor(R.styleable.VoteButton_textColor,mTextColor)
         mLeftColor = a.getColor(R.styleable.VoteButton_leftColor,mLeftColor)
         mRightColor = a.getColor(R.styleable.VoteButton_rightColor,mRightColor)
@@ -259,6 +278,7 @@ class VoteButton : View {
                 }
             }
         }
+        invalidate()
         return true
     }
 
@@ -308,6 +328,6 @@ class VoteButton : View {
         fun onClickLeft()
         fun onClickRight()
     }
-
-
 }
+
+data class VoteButtonDisplaySource(var mLeftColor: Int, var mRightColor: Int,var mTextColor:Int,var mSlashUnderWidth:Float,var mSlashWidth: Float)

@@ -170,6 +170,6 @@
     <dimen name="ft_value_1080p_1px">0.33dp</dimen>
     <dimen name="ft_value_1080p_0px">0dp</dimen>
 
-    <dimen name="double_move_bar_width_645px">215</dimen>
-    <dimen name="vote_button_width_984px">328</dimen>
+    <dimen name="double_move_bar_width_810px">282dp</dimen>
+    <dimen name="vote_button_width_984px">328dp</dimen>
 </resources>

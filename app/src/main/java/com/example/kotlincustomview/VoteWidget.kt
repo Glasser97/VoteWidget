@@ -1,6 +1,8 @@
 package com.example.kotlincustomview
 
 import android.content.Context
+import android.content.res.TypedArray
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +15,7 @@ import kotlinx.android.synthetic.main.vote_widget_layout.view.*
  * created by graysonzeng on 2019/11/28.
  * email: graysonzeng@futunn.com
  **/
-class VoteWidget:RelativeLayout {
+class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
     companion object{
         const val TAG:String = "VoteWidget"
     }
@@ -22,72 +24,40 @@ class VoteWidget:RelativeLayout {
      * 根布局
      */
     private var root:View? = null
+    private var mContext:Context? = null
 
     /**
-     * 未完成投票的视图层
+     * 管理已投票界面的ViewList
      */
-    //左右按钮的点击控件
-    private var mVoteButton:VoteButton? = null
-
-    //剩余时间文案控件
-    private var mRemainTimeTextView:TextView? = null
+    private val votedViewList:ArrayList<View> = ArrayList()
 
     /**
-     * 已完成投票的视图层
+     * 管理未投票界面的ViewList
      */
-    //投票完成的动态进度条DoubleMoveBar
-    private var mDoubleMoveBar:DoubleMoveBar? = null
-
-    //投票完成后的左边标题选项
-    private var mLeftTitleTextView:TextView? =null
-
-    //投票完成后的右边标题选项
-    private var mRightTitleTextView:TextView? = null
-
-    //投票完成后的左边的百分比
-    private var mLeftPercentTextView:TextView? = null
-
-    //投票完成后右边的百分比
-    private var mRightPercentTextView:TextView? = null
-
-    //投票完成后的左边图像控件
-    private var mLeftVoteResultIcon:View? = null
-
-    //投票完成后的右边图像控件
-    private var mRightVoteResultIcon:View? =null
-
+    private val unVotedViewList:ArrayList<View> = ArrayList()
 
     /**
      * 填入的视图数据
      */
     private var mVoteWidgetDisplaySource:VoteWidgetDisplaySource? =null
-    private var mLeftTitle:String = "不看好"
-    private var mRightTitle:String = "看好"
-    private var mLeftNumber:Int = 0
-    private var mRightNumber:Int = 0
-    private var mDeadline:Long = 0
-    private var isPermanent:Boolean = true
-    private var isVoted:Boolean = true
+//    private var mLeftTitle:String = "不看好"
+//    private var mRightTitle:String = "看好"
+//    private var mLeftNumber:Int = 0
+//    private var mRightNumber:Int = 0
+//    private var mDeadline:Long = 0
+//    private var isPermanent:Boolean = true
+//    private var isVoted:Boolean = true
 
 
 
     fun fill(displaySource:VoteWidgetDisplaySource){
         mVoteWidgetDisplaySource = displaySource
-        mLeftTitle = displaySource.mLeftTitle
-        mRightTitle = displaySource.mRightTitle
-        mLeftNumber = displaySource.mLeftNumber
-        mRightNumber = displaySource.mRightNumber
-        mDeadline = displaySource.mDeadline
-        isPermanent = displaySource.isPermanent
-        isVoted = displaySource.isVoted
-
-        if(isPermanent){
-            deadline_tv.visibility = GONE
-        }
-        if(isVoted){
-
+        if(mVoteWidgetDisplaySource == null){
+            root?.visibility = View.GONE
+            //loadData()
         }else{
-
+            root?.visibility = View.VISIBLE
+            updateUI(displaySource)
         }
     }
 
@@ -106,20 +76,141 @@ class VoteWidget:RelativeLayout {
         init(attrs,defStyle)
     }
 
+
+
     private fun init(attrs:AttributeSet?,defStyle:Int){
+        //取出attrs, 为其中的View的值赋值等
+        val a: TypedArray = context.obtainStyledAttributes(attrs,R.styleable.VoteWidget,defStyle,0)
+
+        val textColor = a.getColor(R.styleable.VoteWidget_textColor, Color.WHITE)
+        val leftColor = a.getColor(R.styleable.VoteWidget_leftColor,Color.BLUE)
+        val rightColor = a.getColor(R.styleable.VoteWidget_rightColor,Color.RED)
+        val buttonSlashUnderWidth = a.getDimension(R.styleable.VoteWidget_buttonSlashUnderWidth,20F)
+        val buttonSlashWidth = a.getDimension(R.styleable.VoteWidget_buttonSlashWidth,5F)
+        val barSlashUnderWidth = a.getDimension(R.styleable.VoteWidget_barSlashUnderWidth,10F)
+        val barSlashWidth = a.getDimension(R.styleable.VoteWidget_barSlashWidth,3F)
+        a.recycle()
+
         root = LayoutInflater.from(context).inflate(R.layout.vote_widget_layout,this,true)
 
+        //填入voteButton的初始属性
+        val voteButtonDisplaySource = VoteButtonDisplaySource(leftColor,rightColor,textColor,buttonSlashUnderWidth,buttonSlashWidth)
+        vote_button.fill(voteButtonDisplaySource)
+        val doubleMoveBarDisplaySource = DoubleMoveBarDisplaySource(leftColor,rightColor,barSlashUnderWidth,barSlashWidth)
+        vote_double_bar.fill(doubleMoveBarDisplaySource)
+        //填入已投票页面左右文字的初始属性
+        left_title_tv.setTextColor(leftColor)
+        left_percent_tv.setTextColor(leftColor)
+        right_title_tv.setTextColor(rightColor)
+        right_percent_tv.setTextColor(rightColor)
+
+        //设置vote_button的左右点击监听器
+        vote_button.voteClickListener = this
+        //把view加入ViewList进行管理
+        votedViewList.add(left_title_tv)
+        votedViewList.add(left_icon_view)
+        votedViewList.add(left_percent_tv)
+        votedViewList.add(right_icon_view)
+        votedViewList.add(right_percent_tv)
+        votedViewList.add(right_title_tv)
+        votedViewList.add(vote_double_bar)
+        unVotedViewList.add(vote_button)
+    }
+
+    /**
+     * 更新UI 填充数据
+     */
+    private fun updateUI(displaySource: VoteWidgetDisplaySource){
+        val (mLeftTitle,mRightTitle,mLeftNumber,mRightNumber,mDeadline,isPermanent,isVoted,isLeft) = displaySource
+        vote_button.fill(mLeftTitle,mRightTitle)
+        vote_double_bar.fill(mLeftNumber,mRightNumber)
+        deadline_tv.text = formatCountDownForSnsVote(mDeadline)
+        if(isLeft){
+            left_title_tv.text = "已选「$mLeftTitle」"
+            right_title_tv.text = mRightTitle
+        }else{
+            left_title_tv.text = mLeftTitle
+            right_title_tv.text = "已选「$mRightTitle」"
+        }
+        val leftPercent = computeLeftPercent(mLeftNumber,mRightNumber)
+        left_percent_tv.text = "$leftPercent%"
+        right_percent_tv.text = "${100-leftPercent}%"
+        setVotedVisibility(isVoted)
+        setDeadlineViewVisibility(isPermanent)
+    }
+
+    /**
+     * 计算左右的percent
+     */
+    private fun computeLeftPercent(leftNo:Int,rightNo:Int):Int{
+        val half:Float = 1F/2F
+        var res = 0
+        if((leftNo == 0) && (rightNo == 0)){
+            res = (half*100).toInt()
+        }else if(leftNo == 0 && rightNo != 0){
+            res = 0
+        }else if(rightNo == 0 && leftNo != 0){
+            res = 100
+        }else{
+            res = (100 * leftNo/(leftNo+rightNo).toFloat()).toInt()
+        }
+        return res
     }
 
 
     /**
-     * 设置Voted块的View可见或者不可见
+     * 设置已投票和未投票的情况下View的可见性
      */
-    fun setVotedRegion(isVoted:Boolean){
+    private fun setVotedVisibility(isVoted:Boolean){
         if(!isVoted){
-            right_percent_tv.visibility = View.GONE
-
+            for(view in votedViewList){
+                view.visibility = View.GONE
+            }
+            for(view in unVotedViewList){
+                view.visibility = View.VISIBLE
+            }
+        }else{
+            for(view in votedViewList){
+                view.visibility = View.VISIBLE
+            }
+            for(view in unVotedViewList){
+                view.visibility = View.GONE
+            }
         }
+    }
+
+    /**
+     *设置剩余天数的TextView的可见性
+     */
+    private fun setDeadlineViewVisibility(isPermanent: Boolean){
+        if(isPermanent){
+            deadline_tv.visibility = View.GONE
+        }else{
+            deadline_tv.visibility = View.VISIBLE
+        }
+    }
+
+    /**
+     * 在Detach的时候的释放资源
+     */
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        votedViewList.clear()
+        unVotedViewList.clear()
+    }
+
+    /**
+     * 重写左边的点击事件
+     */
+    override fun onClickLeft(){
+        // TODO
+    }
+
+    /**
+     * 重写右边的点击事件
+     */
+    override fun onClickRight(){
+        // TODO
     }
 
 
@@ -155,4 +246,5 @@ class VoteWidget:RelativeLayout {
 
 }
 
-data class VoteWidgetDisplaySource(var mLeftTitle:String, var mRightTitle:String, var mLeftNumber:Int, var mRightNumber:Int, var mDeadline:Long, var isPermanent:Boolean, var isVoted:Boolean)
+//选择左边 isLeft为true
+data class VoteWidgetDisplaySource(var mLeftTitle:String, var mRightTitle:String, var mLeftNumber:Int, var mRightNumber:Int, var mDeadline:Long, var isPermanent:Boolean, var isVoted:Boolean,var isLeft:Boolean)

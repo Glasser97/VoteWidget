@@ -10,7 +10,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var mDisplaySource = VoteWidgetDisplaySource("看好","不看好",73,27,1000000000,false,false)
+        var mDisplaySource = VoteWidgetDisplaySource("看好","不看好",73,27,1000000,false,true,false)
         vote_widget.fill(mDisplaySource)
         doubleMoveBar.leftNo = 24
         doubleMoveBar.rightNo = 76

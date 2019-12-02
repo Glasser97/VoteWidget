@@ -25,8 +25,8 @@ class DoubleMoveBar : View {
 
     //定义圆角
     private lateinit var corner: CornerPathEffect
-    private var mLeftColor:Int = Color.RED
-    private var mRightColor:Int = Color.BLUE
+    var mLeftColor:Int = Color.RED
+    var mRightColor:Int = Color.BLUE
 
     //定义渐变色的shader和颜色Paint
     private var leftGradient: LinearGradient? =null
@@ -35,8 +35,8 @@ class DoubleMoveBar : View {
     private var rightColorPaint:Paint = Paint()
 
     //定义斜边的斜度和宽度
-    private var mSlashWidth:Float = 5F
-    private var mSlashUnderWidth:Float = 0F
+    var mSlashWidth:Float = 5F
+    var mSlashUnderWidth:Float = 0F
 
     //默认的左右投票数量
     var leftNo:Int = 0
@@ -89,6 +89,28 @@ class DoubleMoveBar : View {
         init(attrs,defStyle)
     }
 
+    /**
+     * 填入初始数据
+     */
+    fun fill(displaySource: DoubleMoveBarDisplaySource){
+        this.mLeftColor = displaySource.mLeftColor
+        this.mRightColor = displaySource.mRightColor
+        this.mSlashUnderWidth = displaySource.mSlashUnderWidth
+        this.mSlashWidth = displaySource.mSlashWidth
+    }
+
+    /**
+     * 填入数字数据
+     */
+    fun fill(mLeftNo:Int,mRightNo:Int){
+        if(leftNo != mLeftNo || rightNo != mRightNo ){
+            this.leftNo = mLeftNo
+            this.rightNo = mRightNo
+            //progress = 0.01F
+            startMoveAnimation()
+        }
+    }
+
 
     private fun init(attrs:AttributeSet?,defStyle:Int){
         val a: TypedArray = context.obtainStyledAttributes(attrs,R.styleable.DoubleMoveBar,defStyle,0)
@@ -109,7 +131,7 @@ class DoubleMoveBar : View {
         //初始化animator
         animator.setPropertyName("progress")
         animator.setFloatValues(0.01F,1F)
-        animator.duration = 700
+        animator.duration = 1000
         animator.target = this
         animator.interpolator = interpolator
 
@@ -219,14 +241,25 @@ class DoubleMoveBar : View {
     }
 
     /**
+     * 开始动画
+     */
+    fun startMoveAnimation(){
+        animator.start()
+    }
+
+    /**
      * 计算左右进度条分别占用的比例
      * @param leftNo 左边的投票数
      * @param rightNo 右边的投票数
      */
     private fun computePercent(leftNo:Int, rightNo:Int):Float{
         val half:Float = 1F/2F
-        return if((leftNo == 0) || (rightNo == 0)){
+        return if((leftNo == 0) && (rightNo == 0)){
             half
+        }else if(leftNo == 0 && rightNo != 0){
+            0.02F
+        }else if(rightNo == 0 && leftNo != 0){
+            0.98F
         }else{
             leftNo.toFloat()/(leftNo+rightNo).toFloat()
         }
@@ -260,3 +293,5 @@ class DoubleMoveBar : View {
     }
 
 }
+
+data class DoubleMoveBarDisplaySource(var mLeftColor:Int,var mRightColor:Int,var mSlashUnderWidth:Float,var mSlashWidth:Float)
