@@ -117,6 +117,8 @@ class DoubleMoveBar : View {
             this.leftNo = mLeftNo
             this.rightNo = mRightNo
             //progress = 0.01F
+            //记得重置path,避免绘制更新前的脏画面
+            resetDrawPaths()
             startMoveAnimation()
         }
     }
@@ -208,10 +210,6 @@ class DoubleMoveBar : View {
         super.onDraw(canvas)
         setBackgroundColor(Color.TRANSPARENT)
 
-        //记得重置path,避免绘制更新前的脏画面
-        leftButtonPath.reset()
-        rightButtonPath.reset()
-
         val contentWidth = width-paddingLeft-paddingRight
         val contentHeight = height-paddingTop-paddingBottom
 
@@ -283,6 +281,14 @@ class DoubleMoveBar : View {
      */
     fun startMoveAnimation(){
         animator.start()
+    }
+
+    /**
+     * 重置path实例,避免绘制刷新画面前的脏画面
+     */
+    private fun resetDrawPaths(){
+        leftButtonPath.reset()
+        rightButtonPath.reset()
     }
 
     /**
