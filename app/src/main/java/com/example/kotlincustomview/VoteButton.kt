@@ -38,6 +38,8 @@ class VoteButton : View {
     private var mTextColor:Int = Color.WHITE
     private var mLeftColor:Int = Color.RED
     private var mRightColor:Int = Color.BLUE
+//    private var mPreLeftColor:Int = mLeftColor
+//    private var mPreRightColor:Int = mRightColor
 
     //定义渐变色的shader
     private var leftGradient: LinearGradient? =null
@@ -94,7 +96,7 @@ class VoteButton : View {
     }
 
     /**
-     * 异步填入数据
+     * 填入初始化数据
      */
     fun fill(displaySource: VoteButtonDisplaySource){
         this.mTextColor = displaySource.mTextColor
@@ -102,8 +104,21 @@ class VoteButton : View {
         this.mRightColor = displaySource.mRightColor
         this.mSlashUnderWidth = displaySource.mSlashUnderWidth
         this.mSlashWidth = displaySource.mSlashWidth
+        leftColorPaint.color = this.mLeftColor
+        rightColorPaint.color = this.mRightColor
+        setColors(this.mLeftColor,this.mRightColor)
+        leftGradient = LinearGradient(leftLeft,leftBottom,
+            leftRight, leftTop,
+            leftColors, colorPositions,Shader.TileMode.CLAMP)
+        rightGradient = LinearGradient(rightRight,rightTop,
+            rightLeft,rightBottom,
+            rightColors,colorPositions,Shader.TileMode.CLAMP)
         //在填入文字之前不重绘
     }
+
+    /**
+     * 填入左右选项文字数据
+     */
     fun fill(mLeftString:String,mRightString:String){
         this.mLeftString = mLeftString
         this.mRightString = mRightString
@@ -127,7 +142,7 @@ class VoteButton : View {
         a.recycle()
 
         //初始化圆角
-        corner = CornerPathEffect(20F)
+        corner = CornerPathEffect(15F)
 
         //初始化渐变颜色数组和渐变位置数组
         setColors(mLeftColor, mRightColor)
@@ -196,6 +211,35 @@ class VoteButton : View {
         return MeasureSpec.getSize(widthMeasureSpec)
     }
 
+    /**
+     * 在这个回调中创建ondraw中需要的对象
+     */
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        //重新创建新的Gradient
+        val contentWidth = width-paddingLeft-paddingRight
+        val contentHeight = height-paddingTop-paddingBottom
+        val leftRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
+        val rightRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
+        leftTop = paddingTop.toFloat()
+        leftLeft = paddingLeft.toFloat()
+        leftBottom = paddingTop+contentHeight.toFloat()
+        leftRight = paddingLeft+leftRectWidth+mSlashUnderWidth
+
+        rightTop = paddingTop.toFloat()
+        rightRight = width-paddingRight.toFloat()
+        rightLeft = width-paddingRight-rightRectWidth-mSlashUnderWidth
+        rightBottom = paddingTop+contentHeight.toFloat()
+
+        leftGradient = LinearGradient(leftLeft,leftBottom,
+            leftRight, leftTop,
+            leftColors, colorPositions,Shader.TileMode.CLAMP)
+        rightGradient = LinearGradient(rightRight,rightTop,
+            rightLeft,rightBottom,
+            rightColors,colorPositions,Shader.TileMode.CLAMP)
+
+    }
+
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         setBackgroundColor(Color.TRANSPARENT)
@@ -218,17 +262,19 @@ class VoteButton : View {
         rightLeft = width-paddingRight-rightRectWidth-mSlashUnderWidth
         rightBottom = paddingTop+contentHeight.toFloat()
 
-        //判断是否已经有渐变色shader,没有的话创建
-        if(leftGradient == null){
-            leftGradient = LinearGradient(leftLeft,leftBottom,
-                leftRight, leftTop,
-                leftColors, colorPositions,Shader.TileMode.CLAMP)
-        }
-        if(rightGradient == null){
-            rightGradient = LinearGradient(rightRight,rightTop,
-                rightLeft,rightBottom,
-                rightColors,colorPositions,Shader.TileMode.CLAMP)
-        }
+        //判断是否已经有渐变色shader,没有或者颜色已改变的话创建
+//        if(leftGradient == null || mPreLeftColor!=mLeftColor){
+//            mPreLeftColor = mLeftColor
+//            leftGradient = LinearGradient(leftLeft,leftBottom,
+//                leftRight, leftTop,
+//                leftColors, colorPositions,Shader.TileMode.CLAMP)
+//        }
+//        if(rightGradient == null || mPreRightColor!=mRightColor){
+//            mPreRightColor = mRightColor
+//            rightGradient = LinearGradient(rightRight,rightTop,
+//                rightLeft,rightBottom,
+//                rightColors,colorPositions,Shader.TileMode.CLAMP)
+//        }
 
 
         //使用Path绘制出左边的按钮,没有从顶点开始是因为圆角可能会不能闭合,逆时针旋转绘制
@@ -268,6 +314,10 @@ class VoteButton : View {
     //点击事件
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when(event?.action){
+            MotionEvent.ACTION_MOVE ->{
+                val x = event.x
+                val y = height - event.y
+            }
             MotionEvent.ACTION_UP -> {
                 val x = event.x
                 val y = height - event.y
@@ -285,21 +335,25 @@ class VoteButton : View {
     /**
      * 判断点击的事件是不是是落在左边的梯形按钮上
      * @x 这是以按钮的左下角为原点的横坐标
-     * @y 以按钮的左下角为原点的点击纵坐标
+     * @ya y是获取的点击纵坐标
+     * y 是以按钮的左下角为原点的点击纵坐标
      */
 
-    private fun isLeft(x:Float,y:Float):Boolean{
+    private fun isLeft(x:Float,ya:Float):Boolean{
+        val y = height- ya
         val resLeft = height*x - mSlashUnderWidth*y + mSlashUnderWidth*height-height*leftRight
         return resLeft <= 0 && x > paddingLeft && y < height-paddingTop && y > paddingBottom
     }
 
     /**
-     * 判断点击的事件是不是落在右边额梯形按钮上
+     * 判断点击的事件是不是是落在左边的梯形按钮上
      * @x 这是以按钮的左下角为原点的横坐标
-     * @y 以按钮的左下角为原点的点击纵坐标
+     * @ya y是获取的点击纵坐标
+     * y 是以按钮的左下角为原点的点击纵坐标
      */
 
-    private fun isRight(x:Float,y:Float):Boolean{
+    private fun isRight(x:Float,ya:Float):Boolean{
+        val y = height - ya
         val resRight = height*x - mSlashUnderWidth*y - height*rightLeft
         return resRight > 0 && x < width-paddingRight && y < height-paddingTop && y > paddingBottom
     }

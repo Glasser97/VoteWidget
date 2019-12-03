@@ -27,16 +27,18 @@ class DoubleMoveBar : View {
     private lateinit var corner: CornerPathEffect
     var mLeftColor:Int = Color.RED
     var mRightColor:Int = Color.BLUE
+//    private var mPreLeftColor:Int = mLeftColor
+//    private var mPreRightColor:Int = mRightColor
 
     //定义渐变色的shader和颜色Paint
-    private var leftGradient: LinearGradient? =null
-    private var rightGradient: LinearGradient? =null
+    private lateinit var leftGradient: LinearGradient
+    private lateinit var rightGradient: LinearGradient
     private var leftColorPaint:Paint = Paint()
     private var rightColorPaint:Paint = Paint()
 
     //定义斜边的斜度和宽度
-    var mSlashWidth:Float = 5F
-    var mSlashUnderWidth:Float = 0F
+    private var mSlashWidth:Float = 5F
+    private var mSlashUnderWidth:Float = 0F
 
     //默认的左右投票数量
     var leftNo:Int = 0
@@ -97,13 +99,21 @@ class DoubleMoveBar : View {
         this.mRightColor = displaySource.mRightColor
         this.mSlashUnderWidth = displaySource.mSlashUnderWidth
         this.mSlashWidth = displaySource.mSlashWidth
+        leftColorPaint.color = mLeftColor
+        rightColorPaint.color = mRightColor
+        setColors(this.mLeftColor,this.mRightColor)
+        //设置颜色后更新新的Gradient
+        leftGradient = LinearGradient(leftLeft, leftBottom, leftGradientRight, leftTop,
+            leftColors,colorPositions,Shader.TileMode.CLAMP)
+        rightGradient = LinearGradient(rightRight,rightTop,rightGradientLeft,rightBottom,
+            rightColors,colorPositions,Shader.TileMode.CLAMP)
     }
 
     /**
      * 填入数字数据
      */
     fun fill(mLeftNo:Int,mRightNo:Int){
-        if(leftNo != mLeftNo || rightNo != mRightNo ){
+        if(leftNo != mLeftNo || rightNo != mRightNo){
             this.leftNo = mLeftNo
             this.rightNo = mRightNo
             //progress = 0.01F
@@ -122,7 +132,7 @@ class DoubleMoveBar : View {
         a.recycle()
 
         //初始化圆角
-        corner = CornerPathEffect(1F)
+        corner = CornerPathEffect(10F)
 
         //初始化渐变颜色数组和渐变位置数组
         setColors(mLeftColor, mRightColor)
@@ -137,13 +147,14 @@ class DoubleMoveBar : View {
 
         //初始化画笔
         leftColorPaint.flags = Paint.ANTI_ALIAS_FLAG
-        leftColorPaint.color = mLeftColor
         leftColorPaint.style = Paint.Style.FILL
         leftColorPaint.pathEffect = corner
+        leftColorPaint.color = mLeftColor
+
         rightColorPaint.flags = Paint.ANTI_ALIAS_FLAG
-        rightColorPaint.color = mRightColor
         rightColorPaint.style = Paint.Style.FILL
         rightColorPaint.pathEffect = corner
+        rightColorPaint.color = mRightColor
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -172,9 +183,34 @@ class DoubleMoveBar : View {
         return MeasureSpec.getSize(widthMeasureSpec)
     }
 
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        //设置渐变的Gradient
+        val contentHeight = height-paddingTop-paddingBottom
+        val contentWidth = width-paddingLeft-paddingRight
+        val leftRectWidth:Int = (computePercent(leftNo,rightNo) * (contentWidth-mSlashUnderWidth-mSlashWidth)).toInt()
+        leftTop = paddingTop.toFloat()
+        leftLeft = paddingLeft.toFloat()
+        leftBottom = paddingTop+contentHeight.toFloat()
+        leftGradientRight = paddingLeft+leftRectWidth+mSlashUnderWidth
+        rightTop = paddingTop.toFloat()
+        rightBottom = paddingTop+contentHeight.toFloat()
+        rightRight = width-paddingRight.toFloat()
+        rightGradientLeft = paddingLeft+leftRectWidth+mSlashWidth
+        leftGradient = LinearGradient(leftLeft, leftBottom, leftGradientRight, leftTop,
+            leftColors,colorPositions,Shader.TileMode.CLAMP)
+        rightGradient = LinearGradient(rightRight,rightTop,rightGradientLeft,rightBottom,
+            rightColors,colorPositions,Shader.TileMode.CLAMP)
+
+    }
+
     override fun onDraw(canvas: Canvas?){
         super.onDraw(canvas)
         setBackgroundColor(Color.TRANSPARENT)
+
+        //记得重置path,避免绘制更新前的脏画面
+        leftButtonPath.reset()
+        rightButtonPath.reset()
 
         val contentWidth = width-paddingLeft-paddingRight
         val contentHeight = height-paddingTop-paddingBottom
@@ -201,14 +237,16 @@ class DoubleMoveBar : View {
 
 
         //设置左右渐变色Shader
-        if(leftGradient == null){
-            leftGradient = LinearGradient(leftLeft, leftBottom, leftGradientRight, leftTop,
-                leftColors,colorPositions,Shader.TileMode.CLAMP)
-        }
-        if(rightGradient == null){
-            rightGradient = LinearGradient(rightRight,rightTop,rightGradientLeft,rightBottom,
-                rightColors,colorPositions,Shader.TileMode.CLAMP)
-        }
+//        if(leftGradient == null || mPreLeftColor != mLeftColor){
+//            mPreLeftColor = mLeftColor
+//            leftGradient = LinearGradient(leftLeft, leftBottom, leftGradientRight, leftTop,
+//                leftColors,colorPositions,Shader.TileMode.CLAMP)
+//        }
+//        if(rightGradient == null || mPreRightColor != mRightColor){
+//            mPreRightColor = mRightColor
+//            rightGradient = LinearGradient(rightRight,rightTop,rightGradientLeft,rightBottom,
+//                rightColors,colorPositions,Shader.TileMode.CLAMP)
+//        }
 
         //使用Path绘制出左边的按钮,没有从顶点开始是因为圆角可能会不能闭合,逆时针旋转绘制
         leftButtonPath.moveTo(leftRight-mSlashUnderWidth, leftTop)

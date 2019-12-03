@@ -8,11 +8,12 @@
     android:background="@color/defaultBackground">
 
     <com.example.kotlincustomview.VoteButton
-        android:id="@+id/vote_button"
+        android:id="@+id/voteButton"
         android:layout_width="match_parent"
         android:layout_height="@dimen/ft_value_1080p_144px"
         android:background="@color/defaultBackground"
-        android:layout_marginTop="@dimen/ft_value_1080p_48px"
+        android:layout_marginTop="@dimen/ft_value_1080p_60px"
+        android:layout_marginBottom="@dimen/ft_value_1080p_60px"
         android:paddingStart="@dimen/ft_value_1080p_48px"
         android:paddingEnd="@dimen/ft_value_1080p_48px"
         app:textSize="@dimen/ft_font_size_1080p_48px"
@@ -21,7 +22,7 @@
         tools:visibility="gone"/>
 
     <View
-        android:id="@+id/left_icon_view"
+        android:id="@+id/leftIconView"
         android:background="@drawable/pub_nncircle_icon_voting_results_opposition"
         android:layout_width="@dimen/ft_value_1080p_42px"
         android:layout_height="@dimen/ft_value_1080p_42px"
@@ -32,7 +33,7 @@
         />
 
     <TextView
-        android:id="@+id/left_title_tv"
+        android:id="@+id/leftTitleTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/ft_font_size_1080p_36px"
@@ -44,16 +45,16 @@
         android:layout_marginStart="@dimen/ft_value_1080p_108px"
         tools:text="看好" />
     <View
-        android:id="@+id/right_icon_view"
+        android:id="@+id/rightIconView"
         android:background="@drawable/pub_nncircle_icon_voting_results_square"
         android:layout_width="@dimen/ft_value_1080p_42px"
         android:layout_height="@dimen/ft_value_1080p_42px"
         android:layout_alignParentTop="true"
         android:layout_marginTop="@dimen/ft_value_1080p_48px"
         android:layout_marginEnd="@dimen/ft_value_1080p_9px"
-        android:layout_toStartOf="@+id/right_title_tv" />
+        android:layout_toStartOf="@+id/rightTitleTv" />
     <TextView
-        android:id="@+id/right_title_tv"
+        android:id="@+id/rightTitleTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/ft_font_size_1080p_36px"
@@ -64,46 +65,48 @@
         android:layout_marginTop="@dimen/ft_value_1080p_48px"
         android:layout_marginEnd="@dimen/ft_value_1080p_57px"
         tools:text="不看好" />
-    <TextView
-        android:id="@+id/left_percent_tv"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/linearBarAndText"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/ft_font_size_1080p_54px"
-        android:includeFontPadding="false"
-        tools:textColor="@color/leftVoteColor"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
         android:layout_marginStart="@dimen/ft_value_1080p_45px"
-        android:layout_marginTop="@dimen/ft_value_1080p_141px"
-        tools:text="73%"
-        />
-    <com.example.kotlincustomview.DoubleMoveBar
-        android:id="@+id/vote_double_bar"
-        android:layout_height="@dimen/ft_value_1080p_36px"
-        android:layout_width="@dimen/double_move_bar_width_810px"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/ft_value_1080p_150px"
-        tools:leftColor="@color/leftVoteColor"
-        tools:rightColor="@color/rightVoteColor"
-        app:slashUnderWidth="@dimen/ft_value_1080p_30px"
-        app:slashWidth="@dimen/ft_value_1080p_9px" />
-    <TextView
-        android:id="@+id/right_percent_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:includeFontPadding="false"
-        android:textSize="@dimen/ft_font_size_1080p_54px"
-        tools:textColor="@color/rightVoteColor"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
         android:layout_marginEnd="@dimen/ft_value_1080p_45px"
         android:layout_marginTop="@dimen/ft_value_1080p_141px"
-        android:layout_marginBottom="@dimen/ft_font_size_1080p_72px"
-        tools:text="27%"/>
+        android:layout_marginBottom="@dimen/ft_value_1080p_72px">
+        <TextView
+            android:id="@+id/leftPercentTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/ft_font_size_1080p_54px"
+            android:includeFontPadding="false"
+            tools:textColor="@color/leftVoteColor"
+            tools:text="73%" />
+        <com.example.kotlincustomview.DoubleMoveBar
+            android:id="@+id/voteDoubleBar"
+            android:layout_height="@dimen/ft_value_1080p_36px"
+            android:layout_width="0dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/ft_value_1080p_30px"
+            android:layout_marginEnd="@dimen/ft_value_1080p_30px"
+            tools:leftColor="@color/leftVoteColor"
+            tools:rightColor="@color/rightVoteColor"
+            app:slashUnderWidth="@dimen/ft_value_1080p_30px"
+            app:slashWidth="@dimen/ft_value_1080p_9px" />
+        <TextView
+            android:id="@+id/rightPercentTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:textSize="@dimen/ft_font_size_1080p_54px"
+            tools:textColor="@color/rightVoteColor"
+            tools:text="27%"/>
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/deadline_tv"
+        android:id="@+id/deadlineTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/ft_font_size_1080p_36px"

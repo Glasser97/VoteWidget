@@ -6,5 +6,5 @@
     <color name="defaultBackground">#FFFFFF</color>
     <color name="leftVoteColor">#179BFF</color>
     <color name="rightVoteColor">#FF6627</color>
-    <color name="deadlineColor">#585454</color>
+    <color name="deadlineColor">#939393</color>
 </resources>

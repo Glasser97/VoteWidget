@@ -7,7 +7,6 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
-import android.widget.TextView
 import kotlinx.android.synthetic.main.vote_widget_layout.view.*
 
 /**
@@ -24,7 +23,6 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
      * 根布局
      */
     private var root:View? = null
-    private var mContext:Context? = null
 
     /**
      * 管理已投票界面的ViewList
@@ -47,8 +45,6 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
 //    private var mDeadline:Long = 0
 //    private var isPermanent:Boolean = true
 //    private var isVoted:Boolean = true
-
-
 
     fun fill(displaySource:VoteWidgetDisplaySource){
         mVoteWidgetDisplaySource = displaySource
@@ -95,26 +91,25 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
 
         //填入voteButton的初始属性
         val voteButtonDisplaySource = VoteButtonDisplaySource(leftColor,rightColor,textColor,buttonSlashUnderWidth,buttonSlashWidth)
-        vote_button.fill(voteButtonDisplaySource)
+        voteButton.fill(voteButtonDisplaySource)
         val doubleMoveBarDisplaySource = DoubleMoveBarDisplaySource(leftColor,rightColor,barSlashUnderWidth,barSlashWidth)
-        vote_double_bar.fill(doubleMoveBarDisplaySource)
+        voteDoubleBar.fill(doubleMoveBarDisplaySource)
         //填入已投票页面左右文字的初始属性
-        left_title_tv.setTextColor(leftColor)
-        left_percent_tv.setTextColor(leftColor)
-        right_title_tv.setTextColor(rightColor)
-        right_percent_tv.setTextColor(rightColor)
+        leftTitleTv.setTextColor(leftColor)
+        leftPercentTv.setTextColor(leftColor)
+        rightTitleTv.setTextColor(rightColor)
+        rightPercentTv.setTextColor(rightColor)
 
         //设置vote_button的左右点击监听器
-        vote_button.voteClickListener = this
-        //把view加入ViewList进行管理
-        votedViewList.add(left_title_tv)
-        votedViewList.add(left_icon_view)
-        votedViewList.add(left_percent_tv)
-        votedViewList.add(right_icon_view)
-        votedViewList.add(right_percent_tv)
-        votedViewList.add(right_title_tv)
-        votedViewList.add(vote_double_bar)
-        unVotedViewList.add(vote_button)
+        voteButton.voteClickListener = this
+
+        //把view加入View管理显示或者不显示
+        votedViewList.add(leftTitleTv)
+        votedViewList.add(leftIconView)
+        votedViewList.add(rightIconView)
+        votedViewList.add(rightTitleTv)
+        votedViewList.add(linearBarAndText)
+        unVotedViewList.add(voteButton)
     }
 
     /**
@@ -122,19 +117,19 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
      */
     private fun updateUI(displaySource: VoteWidgetDisplaySource){
         val (mLeftTitle,mRightTitle,mLeftNumber,mRightNumber,mDeadline,isPermanent,isVoted,isLeft) = displaySource
-        vote_button.fill(mLeftTitle,mRightTitle)
-        vote_double_bar.fill(mLeftNumber,mRightNumber)
-        deadline_tv.text = formatCountDownForSnsVote(mDeadline)
+        voteButton.fill(mLeftTitle,mRightTitle)
+        voteDoubleBar.fill(mLeftNumber,mRightNumber)
+        deadlineTv.text = formatCountDownForSnsVote(mDeadline)
         if(isLeft){
-            left_title_tv.text = "已选「$mLeftTitle」"
-            right_title_tv.text = mRightTitle
+            leftTitleTv.text = "已选「$mLeftTitle」"
+            rightTitleTv.text = mRightTitle
         }else{
-            left_title_tv.text = mLeftTitle
-            right_title_tv.text = "已选「$mRightTitle」"
+            leftTitleTv.text = mLeftTitle
+            rightTitleTv.text = "已选「$mRightTitle」"
         }
         val leftPercent = computeLeftPercent(mLeftNumber,mRightNumber)
-        left_percent_tv.text = "$leftPercent%"
-        right_percent_tv.text = "${100-leftPercent}%"
+        leftPercentTv.text = "$leftPercent%"
+        rightPercentTv.text = "${100-leftPercent}%"
         setVotedVisibility(isVoted)
         setDeadlineViewVisibility(isPermanent)
     }
@@ -184,9 +179,9 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
      */
     private fun setDeadlineViewVisibility(isPermanent: Boolean){
         if(isPermanent){
-            deadline_tv.visibility = View.GONE
+            deadlineTv.visibility = View.GONE
         }else{
-            deadline_tv.visibility = View.VISIBLE
+            deadlineTv.visibility = View.VISIBLE
         }
     }
 
