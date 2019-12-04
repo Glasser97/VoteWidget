@@ -2,46 +2,54 @@ package com.example.kotlincustomview
 
 import android.content.Context
 import android.content.res.TypedArray
-import android.graphics.LinearGradient
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.CornerPathEffect
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.Rect
-import android.graphics.RectF
-import android.graphics.Shader
+import android.graphics.*
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import kotlin.math.min
-import android.graphics.LinearGradient as LinearGradient1
+
 
 /**
  * TODO: document your custom view class.
  */
 class VoteButton : View {
 
+
+    /**
+     * 点击态相关变量,按下的坐标
+     */
+    private var downX:Float = 0f
+    private var downY:Float = 0f
+
+
     private var mHeight:Int = 0
     private var mWidth:Int = 0
-    //定义左右按钮文本
+
+    /**
+     * 定义左右按钮文本
+     */
     private var mLeftString:String = ""
     private var mRightString:String = ""
 
-    //点击事件接口
+
+    /**
+     * 点击事件接口
+     */
     var voteClickListener:VoteClickListener? = null
 
-    //定义圆角
+    /**
+     * 定义圆角
+     */
     private lateinit var corner:CornerPathEffect
 
     private var mTextColor:Int = Color.WHITE
     private var mLeftColor:Int = Color.RED
     private var mRightColor:Int = Color.BLUE
-//    private var mPreLeftColor:Int = mLeftColor
-//    private var mPreRightColor:Int = mRightColor
 
-    //定义渐变色的shader
+    /**
+     * 定义渐变色的shader
+     */
     private var leftGradient: LinearGradient? =null
     private var rightGradient: LinearGradient? =null
     private var mTextSize:Float = 12F
@@ -50,7 +58,9 @@ class VoteButton : View {
     private var leftColorPaint:Paint = Paint()
     private var rightColorPaint:Paint = Paint()
 
-    //左右文字的大小与居中需要唯一的距离
+    /**
+     * 左右文字的大小与居中需要唯一的距离
+     */
     private var mLeftTextWidth:Float = 0F
     private var mLeftTextHeight:Float = 0F
     private var mRightTextWidth:Float = 0F
@@ -60,20 +70,28 @@ class VoteButton : View {
     private var mRightTextHorizonMovement:Float = 0F
     private var mRightTextVerticalMovement:Float = 0F
 
-    //斜线的下端宽度
+    /**
+     * 斜线的下端宽度,和按钮间缝隙宽度
+     */
     private var mSlashUnderWidth:Float = 0F
     private var mSlashWidth:Float = 5F
 
-    //定义绘制的左右Path
+    /**
+     * 定义绘制的左右Path
+     */
     private var leftButtonPath:Path = Path()
     private var rightButtonPath:Path = Path()
 
-    //定义颜色数组
+    /**
+     *  定义颜色数组
+     */
     private lateinit var leftColors:IntArray
     private lateinit var rightColors:IntArray
     private lateinit var colorPositions:FloatArray
 
-    //定义两个梯形的四个顶点边距
+    /**
+     * 定义两个梯形的四个顶点边距
+     */
     private var leftLeft:Float = 0F
     private var leftRight:Float = 0F
     private var leftTop:Float = 0F
@@ -82,6 +100,14 @@ class VoteButton : View {
     private var rightRight:Float = 0F
     private var rightTop:Float = 0F
     private var rightBottom:Float = 0F
+
+    /**
+     * 左右预览进度条的数据
+     */
+    private var preProcessBackColor:Int = 0x66D7DBDE
+    private var preProcessColor:Int = 0xFFFFFF
+    private var leftNumber:Int = 0
+    private var rightNumber:Int = 0
 
     constructor(context:Context):super(context){
         init(null, 0)
@@ -107,11 +133,10 @@ class VoteButton : View {
         leftColorPaint.color = this.mLeftColor
         rightColorPaint.color = this.mRightColor
         setColors(this.mLeftColor,this.mRightColor)
-        leftGradient = LinearGradient(leftLeft,leftBottom,
-            leftRight, leftTop,
+
+        leftGradient = LinearGradient(leftLeft,leftBottom, leftRight, leftTop,
             leftColors, colorPositions,Shader.TileMode.CLAMP)
-        rightGradient = LinearGradient(rightRight,rightTop,
-            rightLeft,rightBottom,
+        rightGradient = LinearGradient(rightRight,rightTop, rightLeft,rightBottom,
             rightColors,colorPositions,Shader.TileMode.CLAMP)
         //在填入文字之前不重绘
     }
@@ -119,12 +144,13 @@ class VoteButton : View {
     /**
      * 填入左右选项文字数据
      */
-    fun fill(mLeftString:String,mRightString:String){
+    fun fill(mLeftString:String,mRightString:String,mLeftNo:Int,mRightNo:Int){
         this.mLeftString = mLeftString
         this.mRightString = mRightString
+        //重测字体的大小,重绘按钮
         invalidateTextPaintAndMeasurements()
         invalidate()
-        //重绘按钮
+
     }
 
     private fun init(attrs:AttributeSet?,defStyle:Int){
@@ -212,7 +238,7 @@ class VoteButton : View {
     }
 
     /**
-     * 在这个回调中创建ondraw中需要的对象
+     * 在这个回调中创建ondraw 中需要的Shader对象
      */
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -237,7 +263,6 @@ class VoteButton : View {
         rightGradient = LinearGradient(rightRight,rightTop,
             rightLeft,rightBottom,
             rightColors,colorPositions,Shader.TileMode.CLAMP)
-
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -261,21 +286,6 @@ class VoteButton : View {
         rightRight = width-paddingRight.toFloat()
         rightLeft = width-paddingRight-rightRectWidth-mSlashUnderWidth
         rightBottom = paddingTop+contentHeight.toFloat()
-
-        //判断是否已经有渐变色shader,没有或者颜色已改变的话创建
-//        if(leftGradient == null || mPreLeftColor!=mLeftColor){
-//            mPreLeftColor = mLeftColor
-//            leftGradient = LinearGradient(leftLeft,leftBottom,
-//                leftRight, leftTop,
-//                leftColors, colorPositions,Shader.TileMode.CLAMP)
-//        }
-//        if(rightGradient == null || mPreRightColor!=mRightColor){
-//            mPreRightColor = mRightColor
-//            rightGradient = LinearGradient(rightRight,rightTop,
-//                rightLeft,rightBottom,
-//                rightColors,colorPositions,Shader.TileMode.CLAMP)
-//        }
-
 
         //使用Path绘制出左边的按钮,没有从顶点开始是因为圆角可能会不能闭合,逆时针旋转绘制
         leftButtonPath.moveTo(leftRight-mSlashUnderWidth, leftTop)
@@ -303,34 +313,81 @@ class VoteButton : View {
         val rightHorizonMidpoint:Float = width-paddingRight-rightRectWidth/2
         val rightVerticalMidpoint:Float = paddingTop+halfH.toFloat()
         //绘制文字
-        canvas?.drawText(mLeftString ?: "",
-            leftHorizonMidpoint+mLeftTextHorizonMovement,
+        canvas?.drawText(mLeftString, leftHorizonMidpoint+mLeftTextHorizonMovement,
             leftVerticalMidpoint+mLeftTextVerticalMovement,mLeftTextPaint)
-        canvas?.drawText(mRightString ?: "",
-            rightHorizonMidpoint+mRightTextHorizonMovement,
+        canvas?.drawText(mRightString, rightHorizonMidpoint+mRightTextHorizonMovement,
             rightVerticalMidpoint+mRightTextVerticalMovement,mRightTextPaint)
     }
 
-    //点击事件
+    /**
+     * 设置左边按钮点击下来
+     */
+    private fun setLeftPressed(){
+        leftColors = intArrayOf(brighterColor(mLeftColor,0.7F),brighterColor(mLeftColor, 0.7F))
+        leftGradient = LinearGradient(leftLeft,leftBottom, leftRight, leftTop,
+            leftColors, colorPositions,Shader.TileMode.CLAMP)
+        this.invalidate()
+    }
+    /**
+     * 设置右边按钮点击下来
+     */
+    private fun setRightPressed(){
+        rightColors = intArrayOf(brighterColor(mRightColor,0.7F),brighterColor(mRightColor,0.7F))
+        rightGradient = LinearGradient(rightRight,rightTop, rightLeft,rightBottom,
+            rightColors,colorPositions,Shader.TileMode.CLAMP)
+        this.invalidate()
+    }
+
+    /**
+     * 取消按下态的Shadow
+     */
+    private fun cancelPressShadow(){
+        setColors(mLeftColor,mRightColor)
+        leftGradient = LinearGradient(leftLeft,leftBottom,leftRight ,leftTop ,
+            leftColors, colorPositions,Shader.TileMode.CLAMP)
+        rightGradient = LinearGradient(rightRight,rightTop, rightLeft,rightBottom,
+            rightColors, colorPositions,Shader.TileMode.CLAMP)
+        this.invalidate()
+    }
+
+    /**
+     * 点击事件的处理
+     */
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when(event?.action){
-            MotionEvent.ACTION_MOVE ->{
-                val x = event.x
-                val y = height - event.y
-            }
-            MotionEvent.ACTION_UP -> {
-                val x = event.x
-                val y = height - event.y
-                if(isLeft(x,y)){
-                    voteClickListener?.onClickLeft()
-                }else if(isRight(x,y)){
-                    voteClickListener?.onClickRight()
+            MotionEvent.ACTION_DOWN ->{
+                downX = event.x
+                downY = event.y
+                //发送延时runnable,进行着色
+                if(isLeft(downX, downY)){
+                    setLeftPressed()
+                }else if(isRight(downX, downY)){
+                    setRightPressed()
                 }
             }
+            MotionEvent.ACTION_MOVE ->{
+                //判断移动的时候是否还在对应按钮内,不在则取消点击态
+                if(isLeft(downX,downY) && !isLeft(event.x,event.y)){
+                    cancelPressShadow()
+                }else if(isRight(downX,downY) && !isRight(event.x,event.y)){
+                    cancelPressShadow()
+                }
+            }
+            MotionEvent.ACTION_UP -> {
+                if(isLeft(downX,downY) && isLeft(event.x,event.y)){
+                    voteClickListener?.onClickLeft()
+                }else if(isRight(downX,downY) && isRight(event.x,event.y)){
+                    voteClickListener?.onClickRight()
+                }
+                cancelPressShadow()
+            }
+//            MotionEvent.ACTION_CANCEL ->{
+//                cancelPressShadow()
+//            }
         }
-        invalidate()
         return true
     }
+
 
     /**
      * 判断点击的事件是不是是落在左边的梯形按钮上
@@ -359,7 +416,9 @@ class VoteButton : View {
     }
 
 
-
+    /**
+     * 计算获取更高的亮度的颜色
+     */
     private fun brighterColor(color:Int, brighterK:Float):Int{
         val alpha:Int = color and 0xff000000.toInt()
         var red:Int = (((color and 0x00ff0000) shr 16) * brighterK).toInt()
@@ -370,6 +429,7 @@ class VoteButton : View {
         blue = if(blue > 255) 255 else blue
         return alpha + (red shl 16) + (green shl 8) + blue
     }
+
 
     private fun setColors(leftColor:Int, rightColor:Int){
         leftColors = intArrayOf(leftColor,brighterColor(leftColor,1.2F))

@@ -7,4 +7,6 @@
     <color name="leftVoteColor">#179BFF</color>
     <color name="rightVoteColor">#FF6627</color>
     <color name="deadlineColor">#939393</color>
+    <color name="preProcessBackColor">#66D7DBDE</color>
+    <color name="preProcessColor">#FFFFFF</color>
 </resources>
