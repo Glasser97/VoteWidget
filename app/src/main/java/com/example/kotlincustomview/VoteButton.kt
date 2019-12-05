@@ -1,5 +1,6 @@
 package com.example.kotlincustomview
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.res.TypedArray
 import android.graphics.*
@@ -7,6 +8,7 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import kotlin.math.min
 
 
@@ -52,14 +54,14 @@ class VoteButton : View {
      */
     private var leftGradient: LinearGradient? =null
     private var rightGradient: LinearGradient? =null
-    private var mTextSize:Float = 12F
+    private var mTextSize:Float = resources.getDimension(R.dimen.ft_font_size_1080p_48px)
     private var mLeftTextPaint:TextPaint = TextPaint()
     private var mRightTextPaint:TextPaint = TextPaint()
     private var leftColorPaint:Paint = Paint()
     private var rightColorPaint:Paint = Paint()
 
     /**
-     * 左右文字的大小与居中需要唯一的距离
+     * 左右文字的大小与居中需要位移的距离
      */
     private var mLeftTextWidth:Float = 0F
     private var mLeftTextHeight:Float = 0F
@@ -69,6 +71,10 @@ class VoteButton : View {
     private var mLeftTextVerticalMovement:Float = 0F
     private var mRightTextHorizonMovement:Float = 0F
     private var mRightTextVerticalMovement:Float = 0F
+    private var leftHorizonMidpoint = 0F
+    private var leftVerticalMidpoint = 0F
+    private var rightHorizonMidpoint = 0F
+    private var rightVerticalMidpoint = 0F
 
     /**
      * 斜线的下端宽度,和按钮间缝隙宽度
@@ -102,12 +108,63 @@ class VoteButton : View {
     private var rightBottom:Float = 0F
 
     /**
+     * Button内部绘制定位需要的数据
+     */
+    private var contentWidth = 0
+    private var contentHeight = 0
+    private var leftRectWidth = 0F
+    private var rightRectWidth = 0F
+
+    /**
      * 左右预览进度条的数据
      */
+    private var isPreProcess:Boolean = true
+    private var prePercentTextSize:Float = resources.getDimension(R.dimen.ft_font_size_1080p_30px)
     private var preProcessBackColor:Int = 0x66D7DBDE
-    private var preProcessColor:Int = 0xFFFFFF
+    private var preProcessColor:Int = Color.WHITE
+    private var prePercentTextColor:Int = mTextColor
+    private var leftPercentString:String = "0%"
+    private var rightPercentString:String = "0%"
     private var leftNumber:Int = 0
     private var rightNumber:Int = 0
+    private var leftPercent:Float = 0F
+    private var quarterY:Float = 36F
+    private var textHalfY:Float = 18F
+    private var preProcessBackPaint:Paint = Paint()
+    private var preProcessForePaint:Paint = Paint()
+    private var preLeftPercentPaint:TextPaint = TextPaint()
+    private var preRightPercentPaint:TextPaint = TextPaint()
+
+    private var leftPercentTextWidth:Float = 0F
+    private var leftPercentTextHeight:Float = 0F
+    private var rightPercentTextWidth:Float = 0F
+    private var rightPercentTextHeight:Float = 0F
+    private var leftPercentTextVerticalMovement:Float = 0F
+    private var rightPercentTextVerticalMovement:Float = 0F
+
+    //左右进度条的长度和宽度
+    private var leftProcessBarWidth:Float = 0F
+    private var rightProcessBarWidth:Float = 0F
+    private var leftProcessBarStartX:Float = 0F
+    private var rightProcessBarStartX:Float = 0F
+    private var processBarHeight:Float = resources.getDimension(R.dimen.ft_value_1080p_9px)
+    private var paddingTextWidth:Float = 0F
+    private var paddingText:String = "100%"
+    private var leftProcessBackground:RectF = RectF()
+    private var rightProcessBackground:RectF = RectF()
+    private var leftProcessBar:RectF = RectF()
+    private var rightProcessBar:RectF =RectF()
+
+    /**
+     * 定义动画的Animator和插值器,以及progress属性
+     */
+    private var animator = ObjectAnimator()
+    private var interpolator = AccelerateDecelerateInterpolator()
+    private var progress:Float = 1F
+        set(value) {
+            field = value
+            invalidate()
+        }
 
     constructor(context:Context):super(context){
         init(null, 0)
@@ -141,16 +198,26 @@ class VoteButton : View {
         //在填入文字之前不重绘
     }
 
+
     /**
-     * 填入左右选项文字数据
+     * 填入左右选项文字和数字数据
      */
     fun fill(mLeftString:String,mRightString:String,mLeftNo:Int,mRightNo:Int){
         this.mLeftString = mLeftString
         this.mRightString = mRightString
-        //重测字体的大小,重绘按钮
-        invalidateTextPaintAndMeasurements()
-        invalidate()
+        this.leftNumber = mLeftNo
+        this.rightNumber = mRightNo
+        val leftPercentNo:Int = computeLeftPercent(leftNumber,rightNumber)
+        leftPercent = computePercent(leftNumber,rightNumber)
+        //更新左右的百分比数据
+        leftPercentString = "${leftPercentNo}%"
+        rightPercentString = "${100-leftPercentNo}%"
 
+
+        //重测字体的大小,重绘动画
+        invalidateTextPaintAndMeasurements()
+        startMoveAnimation()
+        invalidate()
     }
 
     private fun init(attrs:AttributeSet?,defStyle:Int){
@@ -164,6 +231,8 @@ class VoteButton : View {
         mSlashUnderWidth = a.getDimension(R.styleable.VoteButton_slashUnderWidth,mSlashUnderWidth)
         mSlashWidth = a.getDimension(R.styleable.VoteButton_slashWidth,mSlashWidth)
         mTextSize = a.getDimension(R.styleable.VoteButton_textSize,mTextSize)
+        isPreProcess = a.getBoolean(R.styleable.VoteButton_isPreProcess,isPreProcess)
+        prePercentTextSize = a.getDimension(R.styleable.VoteButton_prePercentTextSize,prePercentTextSize)
 
         a.recycle()
 
@@ -172,6 +241,13 @@ class VoteButton : View {
 
         //初始化渐变颜色数组和渐变位置数组
         setColors(mLeftColor, mRightColor)
+
+        //初始化animator
+        animator.setPropertyName("progress")
+        animator.setFloatValues(0.01F,1F)
+        animator.duration = 1000
+        animator.target = this
+        animator.interpolator = interpolator
 
         //初始化画笔
         leftColorPaint.flags = Paint.ANTI_ALIAS_FLAG
@@ -183,11 +259,19 @@ class VoteButton : View {
         rightColorPaint.style = Paint.Style.FILL
         rightColorPaint.pathEffect = corner
 
+        preProcessBackPaint.flags = Paint.ANTI_ALIAS_FLAG
+        preProcessBackPaint.color = preProcessBackColor
+        preProcessBackPaint.style = Paint.Style.FILL
+        preProcessForePaint.flags = Paint.ANTI_ALIAS_FLAG
+        preProcessForePaint.color = preProcessColor
+        preProcessForePaint.style = Paint.Style.FILL
+
         invalidateTextPaintAndMeasurements()
 
     }
 
     private fun invalidateTextPaintAndMeasurements(){
+        //初始化原始的文字的Paint
         mLeftTextPaint.flags = Paint.ANTI_ALIAS_FLAG
         mLeftTextPaint.textAlign = Paint.Align.LEFT
         mRightTextPaint.flags = Paint.ANTI_ALIAS_FLAG
@@ -196,19 +280,40 @@ class VoteButton : View {
         mLeftTextPaint.color = mTextColor
         mRightTextPaint.textSize = mTextSize
         mRightTextPaint.color = mTextColor
+        //测量左右文字的宽高
         mLeftTextWidth = mLeftTextPaint.measureText(mLeftString)
         mRightTextWidth = mRightTextPaint.measureText(mRightString)
         val leftFontMetrics:Paint.FontMetrics = mLeftTextPaint.fontMetrics
         mLeftTextHeight = leftFontMetrics.bottom
         val rightFontMetrics:Paint.FontMetrics = mRightTextPaint.fontMetrics
         mRightTextHeight = rightFontMetrics.bottom
+
+        //初始化预览百分比文字的Paint
+        preLeftPercentPaint.textAlign = Paint.Align.RIGHT
+        preLeftPercentPaint.flags = Paint.ANTI_ALIAS_FLAG
+        preLeftPercentPaint.color = prePercentTextColor
+        preLeftPercentPaint.textSize = prePercentTextSize
+        preRightPercentPaint.textAlign = Paint.Align.LEFT
+        preRightPercentPaint.flags = Paint.ANTI_ALIAS_FLAG
+        preRightPercentPaint.color = prePercentTextColor
+        preRightPercentPaint.textSize = prePercentTextSize
+
         //计算文字居中需要位移的距离
         mLeftTextHorizonMovement = -mLeftTextWidth/2
         mLeftTextVerticalMovement = -(leftFontMetrics.ascent+leftFontMetrics.descent)/2
         mRightTextHorizonMovement = mRightTextWidth/2
         mRightTextVerticalMovement = -(rightFontMetrics.ascent+rightFontMetrics.descent)/2
 
+        //测量左右文字的宽
+        leftPercentTextWidth = preLeftPercentPaint.measureText(leftPercentString)
+        rightPercentTextWidth = preRightPercentPaint.measureText(rightPercentString)
+        paddingTextWidth = preLeftPercentPaint.measureText(paddingText)
+        val leftPercentFontMetrics:Paint.FontMetrics = preLeftPercentPaint.fontMetrics
+        val rightPercentFontMetrics:Paint.FontMetrics = preRightPercentPaint.fontMetrics
 
+        //计算左右百分比文字居中需要位移的距离,这里水平不位移,因为从文字的左边缘或者右边缘开始画,这里主要是要上下居中在绘制线上
+        leftPercentTextVerticalMovement = -(leftPercentFontMetrics.ascent+leftPercentFontMetrics.descent)/2
+        rightPercentTextVerticalMovement = -(rightPercentFontMetrics.ascent+rightPercentFontMetrics.descent)/2
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -238,15 +343,21 @@ class VoteButton : View {
     }
 
     /**
-     * 在这个回调中创建ondraw 中需要的Shader对象
+     * 在这个回调中创建onDraw 中需要的Shader对象
      */
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        //重新创建新的Gradient
-        val contentWidth = width-paddingLeft-paddingRight
-        val contentHeight = height-paddingTop-paddingBottom
-        val leftRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
-        val rightRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
+
+        contentWidth = width-paddingLeft-paddingRight
+        contentHeight = height-paddingTop-paddingBottom
+        leftRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
+        rightRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
+
+        //初始化View绘制预览进度条的各个部分的距离测量
+        quarterY = (contentHeight * 3/4).toFloat()
+        textHalfY = (contentHeight * 3/8).toFloat()
+
+        //计算两个梯形顶点四个边缘的位置
         leftTop = paddingTop.toFloat()
         leftLeft = paddingLeft.toFloat()
         leftBottom = paddingTop+contentHeight.toFloat()
@@ -257,6 +368,18 @@ class VoteButton : View {
         rightLeft = width-paddingRight-rightRectWidth-mSlashUnderWidth
         rightBottom = paddingTop+contentHeight.toFloat()
 
+        //确定预览动态进度条的长度与底色的左右位置坐标
+        leftProcessBarWidth = leftRectWidth-mTextSize*2-paddingTextWidth
+        leftProcessBarStartX = leftLeft+mTextSize
+        //leftProcessBarStartX = leftRight-mSlashUnderWidth-leftPercentTextWidth-mTextSize
+        rightProcessBarWidth = rightRectWidth-mTextSize*2-paddingTextWidth
+        rightProcessBarStartX = rightRight-mTextSize
+        //初始化预览进度条的背景
+        leftProcessBackground.set(leftProcessBarStartX,quarterY+processBarHeight/2,leftProcessBarStartX+leftProcessBarWidth,quarterY-processBarHeight/2)
+        rightProcessBackground.set(rightProcessBarStartX-rightProcessBarWidth,quarterY+processBarHeight/2,rightProcessBarStartX,quarterY-processBarHeight/2)
+
+
+        //创建左右渐变色的Gradient
         leftGradient = LinearGradient(leftLeft,leftBottom,
             leftRight, leftTop,
             leftColors, colorPositions,Shader.TileMode.CLAMP)
@@ -269,23 +392,23 @@ class VoteButton : View {
         super.onDraw(canvas)
         setBackgroundColor(Color.TRANSPARENT)
 
-        val contentWidth = width-paddingLeft-paddingRight
-        val contentHeight = height-paddingTop-paddingBottom
+//        val contentWidth = width-paddingLeft-paddingRight
+//        val contentHeight = height-paddingTop-paddingBottom
+//
+//
+//        val leftRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
+//        val rightRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
 
-        val halfH = contentHeight/2
-        val leftRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
-        val rightRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
-
-        //计算两边梯形的四个顶点
-        leftTop = paddingTop.toFloat()
-        leftLeft = paddingLeft.toFloat()
-        leftBottom = paddingTop+contentHeight.toFloat()
-        leftRight = paddingLeft+leftRectWidth+mSlashUnderWidth
-
-        rightTop = paddingTop.toFloat()
-        rightRight = width-paddingRight.toFloat()
-        rightLeft = width-paddingRight-rightRectWidth-mSlashUnderWidth
-        rightBottom = paddingTop+contentHeight.toFloat()
+//        //计算两边梯形的四个顶点
+//        leftTop = paddingTop.toFloat()
+//        leftLeft = paddingLeft.toFloat()
+//        leftBottom = paddingTop+contentHeight.toFloat()
+//        leftRight = paddingLeft+leftRectWidth+mSlashUnderWidth
+//
+//        rightTop = paddingTop.toFloat()
+//        rightRight = width-paddingRight.toFloat()
+//        rightLeft = width-paddingRight-rightRectWidth-mSlashUnderWidth
+//        rightBottom = paddingTop+contentHeight.toFloat()
 
         //使用Path绘制出左边的按钮,没有从顶点开始是因为圆角可能会不能闭合,逆时针旋转绘制
         leftButtonPath.moveTo(leftRight-mSlashUnderWidth, leftTop)
@@ -307,16 +430,80 @@ class VoteButton : View {
         rightColorPaint.shader = rightGradient
         canvas?.drawPath(rightButtonPath,rightColorPaint)
 
-        //计算文字的中点,绘制文字
-        val leftHorizonMidpoint:Float = paddingLeft+leftRectWidth/2
-        val leftVerticalMidpoint:Float = paddingTop+halfH.toFloat()
-        val rightHorizonMidpoint:Float = width-paddingRight-rightRectWidth/2
-        val rightVerticalMidpoint:Float = paddingTop+halfH.toFloat()
+        val halfH = contentHeight/2
+
+        //绘制动态预览进度条
+        canvas?.drawRoundRect(leftProcessBackground,processBarHeight/2,processBarHeight/2,preProcessBackPaint)
+        canvas?.drawRoundRect(rightProcessBackground,processBarHeight/2,processBarHeight/2,preProcessBackPaint)
+
+        //动态计算进度条的RectF并且绘制
+
+
+        leftProcessBar.set(leftProcessBarStartX,quarterY+processBarHeight/2,
+            leftProcessBarStartX+leftProcessBarWidth*progress*leftPercent,quarterY-processBarHeight/2)
+        rightProcessBar.set(rightProcessBarStartX-rightProcessBarWidth*(1-leftPercent)*progress,
+            quarterY+processBarHeight/2,rightProcessBarStartX,quarterY-processBarHeight/2)
+
+        canvas?.drawRoundRect(leftProcessBar,processBarHeight/2,processBarHeight/2,preProcessForePaint)
+        canvas?.drawRoundRect(rightProcessBar,processBarHeight/2,processBarHeight/2,preProcessForePaint)
+
+        //根据显不显示进度条来判断左右title文字的绘制中点应该在哪里
+        if(!isPreProcess){
+            //计算文字的中点, 绘制两边Title的文字
+            leftHorizonMidpoint = paddingLeft+leftRectWidth/2
+            leftVerticalMidpoint = paddingTop+halfH.toFloat()
+            rightHorizonMidpoint = width-paddingRight-rightRectWidth/2
+            rightVerticalMidpoint = paddingTop+halfH.toFloat()
+        }else{
+            leftHorizonMidpoint = paddingLeft+leftRectWidth/2
+            leftVerticalMidpoint = paddingTop+textHalfY
+            rightHorizonMidpoint = width-paddingRight-rightRectWidth/2
+            rightVerticalMidpoint = paddingTop+textHalfY
+            canvas?.drawText(leftPercentString,leftRight-mSlashUnderWidth-mTextSize/2,paddingTop+quarterY+leftPercentTextVerticalMovement,preLeftPercentPaint)
+            canvas?.drawText(rightPercentString,rightLeft+mSlashUnderWidth+mTextSize/2,paddingTop+quarterY+rightPercentTextVerticalMovement,preRightPercentPaint)
+        }
+
         //绘制文字
         canvas?.drawText(mLeftString, leftHorizonMidpoint+mLeftTextHorizonMovement,
             leftVerticalMidpoint+mLeftTextVerticalMovement,mLeftTextPaint)
         canvas?.drawText(mRightString, rightHorizonMidpoint+mRightTextHorizonMovement,
             rightVerticalMidpoint+mRightTextVerticalMovement,mRightTextPaint)
+    }
+
+    /**
+     * 计算左右进度条分别占用的比例
+     * @param leftNo 左边的投票数
+     * @param rightNo 右边的投票数
+     */
+    private fun computeLeftPercent(leftNo:Int,rightNo:Int):Int{
+        val half:Float = 1F/2F
+        return if((leftNo == 0) && (rightNo == 0)){
+            (half*100).toInt()
+        }else if(leftNo == 0 && rightNo != 0){
+            0
+        }else if(rightNo == 0 && leftNo != 0){
+            100
+        }else{
+            (100 * leftNo/(leftNo+rightNo).toFloat()).toInt()
+        }
+    }
+
+    /**
+     * 计算左右进度条分别占用的比例
+     * @param leftNo 左边的投票数
+     * @param rightNo 右边的投票数
+     */
+    private fun computePercent(leftNo:Int, rightNo:Int):Float{
+        val half:Float = 1F/2F
+        return if((leftNo == 0) && (rightNo == 0)){
+            half
+        }else if(leftNo == 0 && rightNo != 0){
+            0F
+        }else if(rightNo == 0 && leftNo != 0){
+            1F
+        }else{
+            leftNo.toFloat()/(leftNo+rightNo).toFloat()
+        }
     }
 
     /**
@@ -337,6 +524,15 @@ class VoteButton : View {
             rightColors,colorPositions,Shader.TileMode.CLAMP)
         this.invalidate()
     }
+
+    /**
+     * 开始动画
+     */
+    fun startMoveAnimation(){
+        animator.start()
+    }
+
+
 
     /**
      * 取消按下态的Shadow

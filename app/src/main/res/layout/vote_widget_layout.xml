@@ -16,7 +16,9 @@
         android:layout_marginBottom="@dimen/ft_value_1080p_60px"
         android:paddingStart="@dimen/ft_value_1080p_48px"
         android:paddingEnd="@dimen/ft_value_1080p_48px"
-        app:textSize="@dimen/ft_font_size_1080p_48px"
+        app:isPreProcess="true"
+        app:textColor="@color/preProcessColor"
+        app:textSize="@dimen/ft_font_size_1080p_42px"
         tools:leftColor = "@color/leftVoteColor"
         tools:rightColor = "@color/rightVoteColor"
         tools:visibility="gone"/>

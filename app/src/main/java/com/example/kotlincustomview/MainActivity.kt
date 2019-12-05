@@ -11,20 +11,19 @@ class MainActivity : VoteButton.VoteClickListener, AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        var mDisplaySource = VoteWidgetDisplaySource("看好","不看好",2,2,10000,false,false,false)
-        vote_widget.fill(mDisplaySource)
+        val coroutineScope = CoroutineScope(Dispatchers.Main)
+        coroutineScope.launch{
+            var displaySource = withContext(Dispatchers.IO){
+                //delay(2000)
+                VoteWidgetDisplaySource("看好","不看好11",29,71,10000,false,false,false)
+            }
+            vote_widget.fill(displaySource)
+        }
+        //var mDisplaySource = VoteWidgetDisplaySource("看好","不看好",2,2,10000,false,false,false)
+        //vote_widget.fill(mDisplaySource)
         voteButton.voteClickListener = this
         doubleMoveBar.leftNo = 24
         doubleMoveBar.rightNo = 76
-//        val coroutineScope = CoroutineScope(Dispatchers.Main)
-//        coroutineScope.launch{
-//            var displaySource = withContext(Dispatchers.IO){
-//                delay(2000)
-//                VoteWidgetDisplaySource("看好","不看好11",2,5,10000,false,true,false)
-//            }
-//            vote_widget.fill(displaySource)
-//        }
 
     }
 
@@ -40,5 +39,13 @@ class MainActivity : VoteButton.VoteClickListener, AppCompatActivity() {
         var sb:StringBuilder = StringBuilder(textView.text)
         var value = sb.toString().toInt()+1
         textView.text = "$value"
+        val coroutineScope = CoroutineScope(Dispatchers.Main)
+        coroutineScope.launch{
+            var displaySource = withContext(Dispatchers.IO){
+                delay(1000)
+                VoteWidgetDisplaySource("看好","不看好",2,5,10000,false,true,false)
+            }
+            vote_widget.fill(displaySource)
+        }
     }
 }

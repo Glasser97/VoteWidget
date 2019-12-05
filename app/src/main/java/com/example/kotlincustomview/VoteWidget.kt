@@ -117,7 +117,7 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
      */
     private fun updateUI(displaySource: VoteWidgetDisplaySource){
         val (mLeftTitle,mRightTitle,mLeftNumber,mRightNumber,mDeadline,isPermanent,isVoted,isLeft) = displaySource
-        voteButton.fill(mLeftTitle,mRightTitle)
+        voteButton.fill(mLeftTitle,mRightTitle,mLeftNumber,mRightNumber)
         voteDoubleBar.fill(mLeftNumber,mRightNumber)
         deadlineTv.text = formatCountDownForSnsVote(mDeadline)
         if(isLeft){
@@ -212,7 +212,7 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
     /**
      * 牛牛投票计算剩余时间
      */
-    fun formatCountDownForSnsVote(countDownTime: Long): String? { // 倒计时时间比现在晚，则该阶段的倒计时已结束
+    private fun formatCountDownForSnsVote(countDownTime: Long): String? { // 倒计时时间比现在晚，则该阶段的倒计时已结束
         if (countDownTime <= 0) {
             return "投票已结束"
         }

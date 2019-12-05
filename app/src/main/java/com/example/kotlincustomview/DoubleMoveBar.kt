@@ -271,10 +271,10 @@ class DoubleMoveBar : View {
     /**
      * 开始动画
      */
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        animator.start()
-    }
+//    override fun onAttachedToWindow() {
+//        super.onAttachedToWindow()
+//        animator.start()
+//    }
 
     /**
      * 开始动画

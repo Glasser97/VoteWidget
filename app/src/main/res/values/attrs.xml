@@ -18,6 +18,8 @@
         <attr name="leftString" format="string" />
         <attr name="rightString" format="string" />
         <attr name="textSize" format="dimension" />
+        <attr name="prePercentTextSize" format="dimension"/>
+        <attr name="isPreProcess" format="boolean"/>
         <attr name="textColor" />
         <attr name="slashUnderWidth"/>
         <attr name="slashWidth"/>
