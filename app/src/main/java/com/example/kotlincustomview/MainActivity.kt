@@ -15,7 +15,7 @@ class MainActivity : VoteButton.VoteClickListener, AppCompatActivity() {
         coroutineScope.launch{
             var displaySource = withContext(Dispatchers.IO){
                 //delay(2000)
-                VoteWidgetDisplaySource("看好","不看好11",29,71,10000,false,false,false)
+                VoteWidgetDisplaySource("看好","不看好",29,71,10000,false,false,false)
             }
             vote_widget.fill(displaySource)
         }
