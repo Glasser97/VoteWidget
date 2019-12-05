@@ -19,6 +19,16 @@ class MainActivity : VoteButton.VoteClickListener, AppCompatActivity() {
             }
             vote_widget.fill(displaySource)
         }
+
+        vote_widget.setOnClickListener{
+            coroutineScope.launch{
+                var displaySource = withContext(Dispatchers.IO){
+                    delay(1000)
+                    VoteWidgetDisplaySource("看好","不看好",29,71,10000,false,false,false)
+                }
+                vote_widget.fill(displaySource)
+            }
+        }
         //var mDisplaySource = VoteWidgetDisplaySource("看好","不看好",2,2,10000,false,false,false)
         //vote_widget.fill(mDisplaySource)
         voteButton.voteClickListener = this
@@ -32,6 +42,14 @@ class MainActivity : VoteButton.VoteClickListener, AppCompatActivity() {
         var sb:StringBuilder = StringBuilder(textView2.text)
         var value = sb.toString().toInt()+1
         textView2.text = "$value"
+        val coroutineScope = CoroutineScope(Dispatchers.Main)
+        coroutineScope.launch{
+            var displaySource = withContext(Dispatchers.IO){
+                delay(1000)
+                VoteWidgetDisplaySource("看好","不看好",2,5,10000,false,true,true)
+            }
+            vote_widget.fill(displaySource)
+        }
 
     }
 

@@ -44,7 +44,7 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
 //    private var mRightNumber:Int = 0
 //    private var mDeadline:Long = 0
 //    private var isPermanent:Boolean = true
-//    private var isVoted:Boolean = true
+    private var isVoted:Boolean = false
 
     fun fill(displaySource:VoteWidgetDisplaySource){
         mVoteWidgetDisplaySource = displaySource
@@ -117,6 +117,7 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
      */
     private fun updateUI(displaySource: VoteWidgetDisplaySource){
         val (mLeftTitle,mRightTitle,mLeftNumber,mRightNumber,mDeadline,isPermanent,isVoted,isLeft) = displaySource
+        this.isVoted = isVoted
         voteButton.fill(mLeftTitle,mRightTitle,mLeftNumber,mRightNumber)
         voteDoubleBar.fill(mLeftNumber,mRightNumber)
         deadlineTv.text = formatCountDownForSnsVote(mDeadline)
@@ -139,17 +140,15 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
      */
     private fun computeLeftPercent(leftNo:Int,rightNo:Int):Int{
         val half:Float = 1F/2F
-        var res = 0
-        if((leftNo == 0) && (rightNo == 0)){
-            res = (half*100).toInt()
+        return if((leftNo == 0) && (rightNo == 0)){
+            (half*100).toInt()
         }else if(leftNo == 0 && rightNo != 0){
-            res = 0
+            0
         }else if(rightNo == 0 && leftNo != 0){
-            res = 100
+            100
         }else{
-            res = (100 * leftNo/(leftNo+rightNo).toFloat()).toInt()
+            (100 * leftNo/(leftNo+rightNo).toFloat()).toInt()
         }
-        return res
     }
 
 
@@ -183,6 +182,10 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
         }else{
             deadlineTv.visibility = View.VISIBLE
         }
+    }
+
+    override fun performClick(): Boolean {
+        return if (!isVoted) false else super.performClick()
     }
 
     /**
@@ -237,6 +240,10 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
                 "剩余${minute}分钟"
             }
         }
+    }
+
+    interface CancelClickListener{
+        fun onClick()
     }
 
 }
