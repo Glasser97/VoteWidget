@@ -432,20 +432,23 @@ class VoteButton : View {
 
         val halfH = contentHeight/2
 
-        //绘制动态预览进度条
-        canvas?.drawRoundRect(leftProcessBackground,processBarHeight/2,processBarHeight/2,preProcessBackPaint)
-        canvas?.drawRoundRect(rightProcessBackground,processBarHeight/2,processBarHeight/2,preProcessBackPaint)
+        if(isPreProcess){
+            //绘制动态预览进度条
+            canvas?.drawRoundRect(leftProcessBackground,processBarHeight/2,processBarHeight/2,preProcessBackPaint)
+            canvas?.drawRoundRect(rightProcessBackground,processBarHeight/2,processBarHeight/2,preProcessBackPaint)
 
-        //动态计算进度条的RectF并且绘制
+            //动态计算进度条的RectF并且绘制
 
 
-        leftProcessBar.set(leftProcessBarStartX,quarterY+processBarHeight/2,
-            leftProcessBarStartX+leftProcessBarWidth*progress*leftPercent,quarterY-processBarHeight/2)
-        rightProcessBar.set(rightProcessBarStartX-rightProcessBarWidth*(1-leftPercent)*progress,
-            quarterY+processBarHeight/2,rightProcessBarStartX,quarterY-processBarHeight/2)
+            leftProcessBar.set(leftProcessBarStartX,quarterY+processBarHeight/2,
+                leftProcessBarStartX+leftProcessBarWidth*progress*leftPercent,quarterY-processBarHeight/2)
+            rightProcessBar.set(rightProcessBarStartX-rightProcessBarWidth*(1-leftPercent)*progress,
+                quarterY+processBarHeight/2,rightProcessBarStartX,quarterY-processBarHeight/2)
 
-        canvas?.drawRoundRect(leftProcessBar,processBarHeight/2,processBarHeight/2,preProcessForePaint)
-        canvas?.drawRoundRect(rightProcessBar,processBarHeight/2,processBarHeight/2,preProcessForePaint)
+            canvas?.drawRoundRect(leftProcessBar,processBarHeight/2,processBarHeight/2,preProcessForePaint)
+            canvas?.drawRoundRect(rightProcessBar,processBarHeight/2,processBarHeight/2,preProcessForePaint)
+        }
+
 
         //根据显不显示进度条来判断左右title文字的绘制中点应该在哪里
         if(!isPreProcess){
