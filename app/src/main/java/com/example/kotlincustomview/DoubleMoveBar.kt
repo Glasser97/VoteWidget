@@ -20,11 +20,14 @@ import android.view.animation.AccelerateInterpolator
  * TODO: document your custom view class.
  */
 class DoubleMoveBar : View {
+
+    //region values
     private var mHeight:Int = 0
     private var mWidth:Int = 0
 
     //定义圆角
     private lateinit var corner: CornerPathEffect
+    var mCornerSize:Float = 0F
     var mLeftColor:Int = Color.RED
     var mRightColor:Int = Color.BLUE
 //    private var mPreLeftColor:Int = mLeftColor
@@ -75,10 +78,9 @@ class DoubleMoveBar : View {
     private var rightBottom:Float = 0F
     private var leftGradientRight:Float = 0F
     private var rightGradientLeft:Float = 0F
+//endregion
 
-
-
-
+    //region constructor
     constructor(context:Context):super(context){
         init(null, 0)
     }
@@ -90,15 +92,24 @@ class DoubleMoveBar : View {
     constructor(context: Context,attrs: AttributeSet,defStyle: Int):super(context,attrs,defStyle){
         init(attrs,defStyle)
     }
+    //endregion
 
+    //region public functions
     /**
-     * 填入初始数据
+     * 填入初始数据, 只包含显示相关的数据
      */
     fun fill(displaySource: DoubleMoveBarDisplaySource){
         this.mLeftColor = displaySource.mLeftColor
         this.mRightColor = displaySource.mRightColor
         this.mSlashUnderWidth = displaySource.mSlashUnderWidth
         this.mSlashWidth = displaySource.mSlashWidth
+        this.mCornerSize = displaySource.mCornerSize
+
+        //设置里面的圆角参数
+        corner = CornerPathEffect(mCornerSize)
+        leftColorPaint.pathEffect = corner
+        rightColorPaint.pathEffect = corner
+
         leftColorPaint.color = mLeftColor
         rightColorPaint.color = mRightColor
         setColors(this.mLeftColor,this.mRightColor)
@@ -122,8 +133,9 @@ class DoubleMoveBar : View {
             startMoveAnimation()
         }
     }
+    //endregion
 
-
+    //region private functions
     private fun init(attrs:AttributeSet?,defStyle:Int){
         val a: TypedArray = context.obtainStyledAttributes(attrs,R.styleable.DoubleMoveBar,defStyle,0)
 
@@ -131,10 +143,12 @@ class DoubleMoveBar : View {
         mRightColor = a.getColor(R.styleable.DoubleMoveBar_rightColor,mRightColor)
         mSlashUnderWidth = a.getDimension(R.styleable.DoubleMoveBar_slashUnderWidth,mSlashUnderWidth)
         mSlashWidth = a.getDimension(R.styleable.DoubleMoveBar_slashWidth,mSlashWidth)
+        mCornerSize = a.getDimension(R.styleable.DoubleMoveBar_roundCorner,mCornerSize)
+
         a.recycle()
 
         //初始化圆角
-        corner = CornerPathEffect(10F)
+        corner = CornerPathEffect(mCornerSize)
 
         //初始化渐变颜色数组和渐变位置数组
         setColors(mLeftColor, mRightColor)
@@ -233,19 +247,6 @@ class DoubleMoveBar : View {
         //这是右边梯形渐变色的顶点
         rightGradientLeft = paddingLeft+leftRectWidth+mSlashWidth
 
-
-        //设置左右渐变色Shader
-//        if(leftGradient == null || mPreLeftColor != mLeftColor){
-//            mPreLeftColor = mLeftColor
-//            leftGradient = LinearGradient(leftLeft, leftBottom, leftGradientRight, leftTop,
-//                leftColors,colorPositions,Shader.TileMode.CLAMP)
-//        }
-//        if(rightGradient == null || mPreRightColor != mRightColor){
-//            mPreRightColor = mRightColor
-//            rightGradient = LinearGradient(rightRight,rightTop,rightGradientLeft,rightBottom,
-//                rightColors,colorPositions,Shader.TileMode.CLAMP)
-//        }
-
         //使用Path绘制出左边的按钮,没有从顶点开始是因为圆角可能会不能闭合,逆时针旋转绘制
         leftButtonPath.moveTo(leftRight-mSlashUnderWidth, leftTop)
         leftButtonPath.lineTo(leftLeft,leftTop)
@@ -279,7 +280,7 @@ class DoubleMoveBar : View {
     /**
      * 开始动画
      */
-    fun startMoveAnimation(){
+    private fun startMoveAnimation(){
         animator.start()
     }
 
@@ -335,7 +336,8 @@ class DoubleMoveBar : View {
         leftColors = intArrayOf(leftColor,brighterColor(leftColor,1.2F))
         rightColors = intArrayOf(rightColor,brighterColor(rightColor,1.2F))
     }
+    //endregion
 
 }
 
-data class DoubleMoveBarDisplaySource(var mLeftColor:Int,var mRightColor:Int,var mSlashUnderWidth:Float,var mSlashWidth:Float)
+data class DoubleMoveBarDisplaySource(var mLeftColor:Int,var mRightColor:Int,var mSlashUnderWidth:Float,var mSlashWidth:Float, var mCornerSize:Float)

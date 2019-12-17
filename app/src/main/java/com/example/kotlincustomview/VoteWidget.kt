@@ -14,7 +14,7 @@ import kotlinx.android.synthetic.main.vote_widget_layout.view.*
  * created by graysonzeng on 2019/11/28.
  * email: graysonzeng@futunn.com
  **/
-class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
+class VoteWidget:RelativeLayout{
     companion object{
         const val TAG:String = "VoteWidget"
     }
@@ -34,18 +34,13 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
      */
     private val unVotedViewList:ArrayList<View> = ArrayList()
 
+
+    //region DisplaySource And fill
     /**
      * 填入的视图数据
      */
     private var mVoteWidgetDisplaySource:VoteWidgetDisplaySource? =null
-//    private var mLeftTitle:String = "不看好"
-//    private var mRightTitle:String = "看好"
-//    private var mLeftNumber:Int = 0
-//    private var mRightNumber:Int = 0
-//    private var mDeadline:Long = 0
-//    private var isPermanent:Boolean = true
     private var isVoted:Boolean = false
-
     fun fill(displaySource:VoteWidgetDisplaySource){
         mVoteWidgetDisplaySource = displaySource
         if(mVoteWidgetDisplaySource == null){
@@ -56,7 +51,9 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
             updateUI(displaySource)
         }
     }
+    //endregion
 
+    //region constructor
     /**
      * 构造器
      */
@@ -71,6 +68,7 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
     constructor(context: Context, attrs: AttributeSet, defStyle:Int):super(context,attrs,defStyle){
         init(attrs,defStyle)
     }
+    //endregion
 
 
 
@@ -85,14 +83,16 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
         val buttonSlashWidth = a.getDimension(R.styleable.VoteWidget_buttonSlashWidth,5F)
         val barSlashUnderWidth = a.getDimension(R.styleable.VoteWidget_barSlashUnderWidth,10F)
         val barSlashWidth = a.getDimension(R.styleable.VoteWidget_barSlashWidth,3F)
+        val buttonCornerSize = a.getDimension(R.styleable.VoteWidget_buttonRoundCorner,0F)
+        val voteBarCornerSize = a.getDimension(R.styleable.VoteWidget_voteBarRoundCorner,0F)
         a.recycle()
 
         root = LayoutInflater.from(context).inflate(R.layout.vote_widget_layout,this,true)
 
         //填入voteButton的初始属性
-        val voteButtonDisplaySource = VoteButtonDisplaySource(leftColor,rightColor,textColor,buttonSlashUnderWidth,buttonSlashWidth)
+        val voteButtonDisplaySource = VoteButtonDisplaySource(leftColor,rightColor,textColor,buttonSlashUnderWidth,buttonSlashWidth,buttonCornerSize)
         voteButton.fill(voteButtonDisplaySource)
-        val doubleMoveBarDisplaySource = DoubleMoveBarDisplaySource(leftColor,rightColor,barSlashUnderWidth,barSlashWidth)
+        val doubleMoveBarDisplaySource = DoubleMoveBarDisplaySource(leftColor,rightColor,barSlashUnderWidth,barSlashWidth,voteBarCornerSize)
         voteDoubleBar.fill(doubleMoveBarDisplaySource)
         //填入已投票页面左右文字的初始属性
         leftTitleTv.setTextColor(leftColor)
@@ -101,9 +101,19 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
         rightPercentTv.setTextColor(rightColor)
 
         //设置vote_button的左右点击监听器
-        voteButton.voteClickListener = this
+        //voteButton.voteClickListener = this
 
         //把view加入View管理显示或者不显示
+        addViewToList()
+
+        //默认隐藏控件, 等到填入数据才显示(不知道这里需不需要占位View)
+        root?.visibility = View.GONE
+    }
+
+    /**
+     * 添加相关的控件进管理显隐的List
+     */
+    private fun addViewToList(){
         votedViewList.add(leftTitleTv)
         votedViewList.add(leftIconView)
         votedViewList.add(rightIconView)
@@ -112,11 +122,16 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
         unVotedViewList.add(voteButton)
     }
 
+
     /**
      * 更新UI 填充数据
      */
     private fun updateUI(displaySource: VoteWidgetDisplaySource){
+
+        //取出displaySource中的变量
         val (mLeftTitle,mRightTitle,mLeftNumber,mRightNumber,mDeadline,isPermanent,isVoted,isLeft) = displaySource
+
+        //设置变量
         this.isVoted = isVoted
         voteButton.fill(mLeftTitle,mRightTitle,mLeftNumber,mRightNumber)
         voteDoubleBar.fill(mLeftNumber,mRightNumber)
@@ -131,6 +146,7 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
         val leftPercent = computeLeftPercent(mLeftNumber,mRightNumber)
         leftPercentTv.text = "$leftPercent%"
         rightPercentTv.text = "${100-leftPercent}%"
+        //根据变量控制内部View的显隐
         setVotedVisibility(isVoted)
         setDeadlineViewVisibility(isPermanent)
     }
@@ -184,8 +200,11 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
         }
     }
 
+    /**
+     * 重写performClick()方法, 根据isVoted 状态来判断是否响应点击事件
+     */
     override fun performClick(): Boolean {
-        return if (!isVoted) false else super.performClick()
+        return if (isVoted) super.performClick() else false
     }
 
     /**
@@ -197,19 +216,19 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
         unVotedViewList.clear()
     }
 
-    /**
-     * 重写左边的点击事件
-     */
-    override fun onClickLeft(){
-        // TODO
-    }
-
-    /**
-     * 重写右边的点击事件
-     */
-    override fun onClickRight(){
-        // TODO
-    }
+//    /**
+//     * 重写左边的点击事件
+//     */
+//    override fun onClickLeft(){
+//        // TODO
+//    }
+//
+//    /**
+//     * 重写右边的点击事件
+//     */
+//    override fun onClickRight(){
+//        // TODO
+//    }
 
 
     /**
@@ -240,10 +259,6 @@ class VoteWidget:RelativeLayout,VoteButton.VoteClickListener {
                 "剩余${minute}分钟"
             }
         }
-    }
-
-    interface CancelClickListener{
-        fun onClick()
     }
 
 }

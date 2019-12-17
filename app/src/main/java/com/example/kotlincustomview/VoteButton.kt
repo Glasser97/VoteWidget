@@ -12,12 +12,10 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import kotlin.math.min
 
 
-/**
- * TODO: document your custom view class.
- */
+
 class VoteButton : View {
 
-
+    //region values(变量)
     /**
      * 点击态相关变量,按下的坐标
      */
@@ -44,7 +42,7 @@ class VoteButton : View {
      * 定义圆角
      */
     private lateinit var corner:CornerPathEffect
-
+    private var mCornerSize:Float = 0F
     private var mTextColor:Int = Color.WHITE
     private var mLeftColor:Int = Color.RED
     private var mRightColor:Int = Color.BLUE
@@ -142,7 +140,10 @@ class VoteButton : View {
     private var leftPercentTextVerticalMovement:Float = 0F
     private var rightPercentTextVerticalMovement:Float = 0F
 
-    //左右进度条的长度和宽度
+    /**
+     * 左右预览进度条的长度和宽度
+     */
+
     private var leftProcessBarWidth:Float = 0F
     private var rightProcessBarWidth:Float = 0F
     private var leftProcessBarStartX:Float = 0F
@@ -166,6 +167,11 @@ class VoteButton : View {
             invalidate()
         }
 
+    //endregion
+
+
+
+    //region constructor
     constructor(context:Context):super(context){
         init(null, 0)
     }
@@ -177,9 +183,11 @@ class VoteButton : View {
     constructor(context: Context,attrs: AttributeSet,defStyle: Int):super(context,attrs,defStyle){
         init(attrs,defStyle)
     }
+    //endregion
 
+    //region public functions
     /**
-     * 填入初始化数据
+     * 填入初始化数据,里面不包含数据相关的数据, 只与界面展示有关
      */
     fun fill(displaySource: VoteButtonDisplaySource){
         this.mTextColor = displaySource.mTextColor
@@ -187,10 +195,17 @@ class VoteButton : View {
         this.mRightColor = displaySource.mRightColor
         this.mSlashUnderWidth = displaySource.mSlashUnderWidth
         this.mSlashWidth = displaySource.mSlashWidth
+        this.mCornerSize = displaySource.mCornerSize
+
+        //设置按钮圆角参数
+        corner = CornerPathEffect(mCornerSize)
+        leftColorPaint.pathEffect = corner
+        rightColorPaint.pathEffect = corner
+
+        //设置左右颜色
         leftColorPaint.color = this.mLeftColor
         rightColorPaint.color = this.mRightColor
         setColors(this.mLeftColor,this.mRightColor)
-
         leftGradient = LinearGradient(leftLeft,leftBottom, leftRight, leftTop,
             leftColors, colorPositions,Shader.TileMode.CLAMP)
         rightGradient = LinearGradient(rightRight,rightTop, rightLeft,rightBottom,
@@ -219,7 +234,9 @@ class VoteButton : View {
         startMoveAnimation()
         invalidate()
     }
+    //endregion
 
+    //region private functions
     private fun init(attrs:AttributeSet?,defStyle:Int){
         val a:TypedArray = context.obtainStyledAttributes(attrs,R.styleable.VoteButton,defStyle,0)
 
@@ -233,11 +250,12 @@ class VoteButton : View {
         mTextSize = a.getDimension(R.styleable.VoteButton_textSize,mTextSize)
         isPreProcess = a.getBoolean(R.styleable.VoteButton_isPreProcess,isPreProcess)
         prePercentTextSize = a.getDimension(R.styleable.VoteButton_prePercentTextSize,prePercentTextSize)
+        mCornerSize = a.getDimension(R.styleable.VoteButton_roundCorner,mCornerSize)
 
         a.recycle()
 
         //初始化圆角
-        corner = CornerPathEffect(15F)
+        corner = CornerPathEffect(mCornerSize)
 
         //初始化渐变颜色数组和渐变位置数组
         setColors(mLeftColor, mRightColor)
@@ -330,7 +348,7 @@ class VoteButton : View {
         if(specMode == MeasureSpec.EXACTLY){
             result = specSize
         }else{
-            result = (mTextSize+context.resources.getDimension(R.dimen.dp_20)).toInt()
+            result = (mTextSize+context.resources.getDimension(R.dimen.ft_font_size_1080p_60px)).toInt()
             if(specMode == MeasureSpec.AT_MOST){
                 result = min(result,specSize)
             }
@@ -392,24 +410,6 @@ class VoteButton : View {
         super.onDraw(canvas)
         setBackgroundColor(Color.TRANSPARENT)
 
-//        val contentWidth = width-paddingLeft-paddingRight
-//        val contentHeight = height-paddingTop-paddingBottom
-//
-//
-//        val leftRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
-//        val rightRectWidth = (contentWidth-mSlashUnderWidth-mSlashWidth)/2
-
-//        //计算两边梯形的四个顶点
-//        leftTop = paddingTop.toFloat()
-//        leftLeft = paddingLeft.toFloat()
-//        leftBottom = paddingTop+contentHeight.toFloat()
-//        leftRight = paddingLeft+leftRectWidth+mSlashUnderWidth
-//
-//        rightTop = paddingTop.toFloat()
-//        rightRight = width-paddingRight.toFloat()
-//        rightLeft = width-paddingRight-rightRectWidth-mSlashUnderWidth
-//        rightBottom = paddingTop+contentHeight.toFloat()
-
         //使用Path绘制出左边的按钮,没有从顶点开始是因为圆角可能会不能闭合,逆时针旋转绘制
         leftButtonPath.moveTo(leftRight-mSlashUnderWidth, leftTop)
         leftButtonPath.lineTo(leftLeft,leftTop)
@@ -432,6 +432,7 @@ class VoteButton : View {
 
         val halfH = contentHeight/2
 
+        //判断是否需要绘制进度条
         if(isPreProcess){
             //绘制动态预览进度条
             canvas?.drawRoundRect(leftProcessBackground,processBarHeight/2,processBarHeight/2,preProcessBackPaint)
@@ -535,8 +536,6 @@ class VoteButton : View {
         animator.start()
     }
 
-
-
     /**
      * 取消按下态的Shadow
      */
@@ -616,7 +615,7 @@ class VoteButton : View {
 
 
     /**
-     * 计算获取更高的亮度的颜色
+     * 计算获取更高的亮度的颜色, 用于自动设置渐变色
      */
     private fun brighterColor(color:Int, brighterK:Float):Int{
         val alpha:Int = color and 0xff000000.toInt()
@@ -629,18 +628,23 @@ class VoteButton : View {
         return alpha + (red shl 16) + (green shl 8) + blue
     }
 
-
+    /**
+     * 设置渐变色颜色数组与位置
+     */
     private fun setColors(leftColor:Int, rightColor:Int){
         leftColors = intArrayOf(leftColor,brighterColor(leftColor,1.2F))
         rightColors = intArrayOf(rightColor,brighterColor(rightColor,1.2F))
         colorPositions = floatArrayOf(0.3F,0.8F)
     }
+    //endregion
 
-    //点击事件接口
+    /**
+     * 点击事件接口
+     */
     interface VoteClickListener{
         fun onClickLeft()
         fun onClickRight()
     }
 }
 
-data class VoteButtonDisplaySource(var mLeftColor: Int, var mRightColor: Int,var mTextColor:Int,var mSlashUnderWidth:Float,var mSlashWidth: Float)
+data class VoteButtonDisplaySource(var mLeftColor: Int, var mRightColor: Int,var mTextColor:Int,var mSlashUnderWidth:Float,var mSlashWidth: Float, var mCornerSize:Float)

@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
     <com.example.kotlincustomview.VoteWidget
-        android:id="@+id/vote_widget"
+        android:id="@+id/voteWidget"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -22,6 +22,8 @@
         app:rightColor="@color/rightVoteColor"
         app:barSlashUnderWidth="@dimen/ft_value_1080p_30px"
         app:barSlashWidth="@dimen/ft_value_1080p_9px"
+        app:voteBarRoundCorner="@dimen/ft_value_1080p_6px"
+        app:buttonRoundCorner="@dimen/ft_value_1080p_12px"
         />
 
     <com.example.kotlincustomview.DoubleMoveBar
@@ -31,14 +33,15 @@
         android:layout_marginTop="20dp"
         android:paddingStart="@dimen/ft_value_1080p_60px"
         android:paddingEnd="@dimen/ft_value_1080p_60px"
-        app:layout_constraintBottom_toTopOf="@+id/vote_widget"
+        app:layout_constraintBottom_toTopOf="@+id/voteWidget"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:leftColor="@color/leftVoteColor"
         app:rightColor="@color/rightVoteColor"
         app:slashUnderWidth="@dimen/ft_value_1080p_30px"
-        app:slashWidth="@dimen/ft_value_1080p_9px" />
+        app:slashWidth="@dimen/ft_value_1080p_9px"
+        app:roundCorner = "@dimen/ft_value_1080p_3px"/>
 
     <TextView
         android:id="@+id/textView"

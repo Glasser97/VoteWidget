@@ -1,6 +1,5 @@
 package com.example.kotlincustomview
 
-import android.content.DialogInterface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
@@ -16,12 +15,12 @@ class MainActivity : VoteButton.VoteClickListener, AppCompatActivity() {
         val coroutineScope = CoroutineScope(Dispatchers.Main)
         coroutineScope.launch{
             var displaySource = withContext(Dispatchers.IO){
-                //delay(2000)
+                delay(2000)
                 VoteWidgetDisplaySource("看好","不看好",29,71,1000,false,false,false)
             }
-            vote_widget.fill(displaySource)
+            voteWidget.fill(displaySource)
         }
-        vote_widget.setOnClickListener{
+        voteWidget.setOnClickListener{
             AlertDialog.Builder(this)
                 .setMessage("确定取消投票吗?")
                 .setCancelable(true)
@@ -32,7 +31,7 @@ class MainActivity : VoteButton.VoteClickListener, AppCompatActivity() {
                             delay(1500)
                             VoteWidgetDisplaySource("看好","不看好",29,71,1000,false,false,false)
                         }
-                        vote_widget.fill(displaySource)
+                        voteWidget.fill(displaySource)
                     }
                 }
                 .create()
@@ -41,8 +40,8 @@ class MainActivity : VoteButton.VoteClickListener, AppCompatActivity() {
         //var mDisplaySource = VoteWidgetDisplaySource("看好","不看好",2,2,10000,false,false,false)
         //vote_widget.fill(mDisplaySource)
         voteButton.voteClickListener = this
-        doubleMoveBar.leftNo = 24
-        doubleMoveBar.rightNo = 76
+        doubleMoveBar.leftNo = 1
+        doubleMoveBar.rightNo = 100
 
     }
 
@@ -55,9 +54,9 @@ class MainActivity : VoteButton.VoteClickListener, AppCompatActivity() {
         coroutineScope.launch{
             var displaySource = withContext(Dispatchers.IO){
                 delay(1000)
-                VoteWidgetDisplaySource("看好","不看好",2,5,10000,false,true,true)
+                VoteWidgetDisplaySource("看好","不看好",3,5,10000,false,true,true)
             }
-            vote_widget.fill(displaySource)
+            voteWidget.fill(displaySource)
         }
 
     }
@@ -72,7 +71,7 @@ class MainActivity : VoteButton.VoteClickListener, AppCompatActivity() {
                 delay(1000)
                 VoteWidgetDisplaySource("看好","不看好",2,5,10000,false,true,false)
             }
-            vote_widget.fill(displaySource)
+            voteWidget.fill(displaySource)
         }
     }
 }

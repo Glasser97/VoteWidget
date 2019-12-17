@@ -6,12 +6,14 @@
     <attr name="leftColor" format="color" />
     <attr name="rightColor" format="color" />
     <attr name="textColor" format="color" />
+    <attr name="roundCorner" format = "dimension"/>
 
     <declare-styleable name="DoubleMoveBar">
         <attr name="slashUnderWidth"/>
         <attr name="slashWidth"/>
         <attr name="leftColor"/>
         <attr name="rightColor"/>
+        <attr name="roundCorner"/>
     </declare-styleable>
 
     <declare-styleable name="VoteButton">
@@ -20,6 +22,7 @@
         <attr name="textSize" format="dimension" />
         <attr name="prePercentTextSize" format="dimension"/>
         <attr name="isPreProcess" format="boolean"/>
+        <attr name="roundCorner"/>
         <attr name="textColor" />
         <attr name="slashUnderWidth"/>
         <attr name="slashWidth"/>
@@ -32,6 +35,8 @@
         <attr name="barSlashWidth" format="dimension"/>
         <attr name="buttonSlashUnderWidth" format="dimension"/>
         <attr name="barSlashUnderWidth" format="dimension"/>
+        <attr name="buttonRoundCorner" format="dimension"/>
+        <attr name="voteBarRoundCorner" format="dimension"/>
         <attr name="leftColor"/>
         <attr name="rightColor"/>
         <attr name="textColor" />
